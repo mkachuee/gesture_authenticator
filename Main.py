@@ -29,12 +29,14 @@ while video_capture.isOpened():
     ret, frame_input = video_capture.read()
     cv2.imshow('input video', frame_input)
     # store first 3s frames
-    if frame_time < 3:
+    if frame_number < 2:
         frames_first3s.append(frame_input)
+    elif frame_number == 2:
+        frame_background = np.uint8(np.mean(frames_first3s, axis=0))
     # process from 3s
     else:
         frame_output_1 = background.remove_background(
-            frames_background=frames_first3s, frame_input=frame_input)
+            frame_background=frame_background, frame_input=frame_input)
 
         cv2.imshow('output video', frame_output_1)
         cv2.waitKey(int(1000*1.0/VIDEO_FR))
