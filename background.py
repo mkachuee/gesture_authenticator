@@ -13,7 +13,6 @@ def remove_background(frame_background, frame_input):
     """
     This function removes background from the frame_input
     """
-    
     frame_background_gray = cv2.cvtColor(frame_background, cv2.COLOR_BGR2GRAY)
     frame_input_gray = cv2.cvtColor(frame_input, cv2.COLOR_BGR2GRAY)
     # remove background
@@ -22,5 +21,24 @@ def remove_background(frame_background, frame_input):
     # convert to binary image
     ret, frame_output_5 = cv2.threshold(frame_output_4, 64, 255, cv2.THRESH_BINARY)
     frame_output_6 = np.tile(frame_output_5.transpose()/255, (3, 1, 1)).transpose() * frame_input
-    return frame_output_6
+    
+    # extra precessings
+    frame_output_gaussian = cv2.GaussianBlur(frame_output_6, (3, 3), 0, 0)
+    # median of image to remove salt and papper noise
+    frame_median = cv2.medianBlur(frame_output_6, 3)
+    median_gray = cv2.cvtColor(frame_median, cv2.COLOR_BGR2GRAY)
+    ind = np.nonzero(median_gray)
+    
+    
+    frame_cropped = np.array([[0, 0],[0, 0]])
+    if len(ind[0]) !=0:
+        #frame_cropped = median_gray[ind[0][0]:ind[0][-1], ind[1][0]:ind[1][-1]]
+        frame_cropped = frame_output_6[np.min(ind[0]):np.max(ind[0]), 
+            np.min(ind[1]):np.max(ind[1]), :]
+    #if np.max(median_gray) != 0:
+    #    pdb.set_trace()
+    #if frame_cropped.shape[0]==0:
+    if frame_cropped.shape[0]==0 or frame_cropped.shape[1]==0:
+        frame_cropped = np.array([[0, 0],[0, 0]])
+    return frame_output_6, frame_cropped
 

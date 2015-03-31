@@ -35,10 +35,11 @@ while video_capture.isOpened():
         frame_background = np.uint8(np.mean(frames_first3s, axis=0))
     # process from 3s
     else:
-        frame_output_1 = background.remove_background(
+        frame_output_1, frame_output_2 = background.remove_background(
             frame_background=frame_background, frame_input=frame_input)
 
-        cv2.imshow('output video', frame_output_1)
+        cv2.imshow('output video 1', frame_output_1)
+        cv2.imshow('output video 2', frame_output_2)
         cv2.waitKey(int(1000*1.0/VIDEO_FR))
 
 
