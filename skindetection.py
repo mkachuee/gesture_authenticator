@@ -13,7 +13,7 @@ def skin_detector(frame_BGR_input):
   	"""
   	# convert to HSV space
   	frame_HSV = cv2.cvtColor(frame_BGR_input, cv2.COLOR_BGR2HSV)
-    cv2.imshow('HSV video', frame_HSV)
+  	cv2.imshow('HSV video', frame_HSV)
   	# tresholding for find skin
   	#height, width = frame_HSV.shape[:2]
   	#frame_skin_detected = np.zeros((height, width, 3), np.uint8)
