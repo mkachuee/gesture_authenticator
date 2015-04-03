@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
-import backgroun
+import background
 import skindetection
 # Script options
 VIDEO_SOURCE = \
