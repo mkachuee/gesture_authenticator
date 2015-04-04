@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import cv2
 
 import background
+import skindetection
 # Script options
 VIDEO_SOURCE = \
     "../../SmartVision/Hand_PatternDrawing.avi"
@@ -43,7 +44,11 @@ while video_capture.isOpened():
 
         cv2.imshow('output video 1', frame_output_1)
         cv2.imshow('output video 2', frame_output_2)
+
         cv2.waitKey(int(1000*0.10/VIDEO_FR))
 
-
-
+        # Start of Phase 2
+        frame_justSkin = skindetection.skin_detector(frame_output_1)
+        #frame_justSkin = skindetection.skin_detector(frame_output_2)
+        cv2.imshow('output video 3', frame_justSkin)
+        cv2.waitKey(int(1000*1.0/VIDEO_FR))
