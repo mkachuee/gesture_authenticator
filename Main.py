@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 import cv2
 import background
 import skindetection
+import face
 # Script options
-VIDEO_SOURCE = 0#\
-#'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
+VIDEO_SOURCE = \
+'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 #
 VIDEO_FR = 30.0
 # Script starts here
@@ -44,7 +45,18 @@ while video_capture.isOpened():
 			continue
 		cv2.imshow('output video 1', frame_output_1)
 		cv2.imshow('output video 2', frame_output_2)
-		
+
+		# face detection , where face_rectangles contain x,y as left upper corner & w,h for width and height
+		face_rectangles = face.face_detect(frame_output_1)
+
+		## this part is for test, comment it in application
+		frame_out_face = frame_output_1.copy()
+		for (x, y, w, h) in face_rectangles:
+			cv2.rectangle(frame_out_face, (x, y) , (x+w, y+h), (0, 255, 0), 2)
+
+		cv2.imshow('output video face', frame_out_face)
+		##
+
 		cv2.waitKey(int(1000*0.10/VIDEO_FR))
 
 		# Start of Phase 2
