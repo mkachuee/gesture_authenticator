@@ -7,12 +7,18 @@ import numpy as np
 import cv2
 
 # options
-def skin_detector(frame_BGR_input):
+def skin_detector(frame_BGR_input, face_rectangles):
 	"""
 	This function converts input frame to HSV and detects area of skin
 	"""
+	#int i=0
+	#for (x, y, w, h) in face_rectangle :
+	#	face_BGR[i] = frame_BGR_input[y:y+h, x:x+w]
+	#	i+=1
+	#
 	# convert to HSV space
 	frame_HSV = cv2.cvtColor(frame_BGR_input, cv2.COLOR_BGR2HSV)
+	#face_HSV = cv2.cvtColor(face_BGR[0], cv2.COLOR_BGR2GRAY)
     	cv2.imshow('HSV video', frame_HSV)
 	# tresholding for find skin
 	#height, width = frame_HSV.shape[:2]
@@ -20,7 +26,7 @@ def skin_detector(frame_BGR_input):
 	low_range = np.array([0, 60, 70], dtype="uint8")
 	high_range = np.array([20, 255, 255], dtype="uint8")
 	skin_detected = cv2.inRange(frame_HSV, low_range, high_range)
-
+	
 	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
 
 	#skin_detected = cv2.erode(skin_detected, kernel, iterations=1)

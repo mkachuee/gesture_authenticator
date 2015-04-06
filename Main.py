@@ -61,7 +61,7 @@ while video_capture.isOpened():
 
 		# Start of Phase 2
 		#frame_justSkin = skindetection.skin_detector(frame_output_1)
-		frame_justSkin = skindetection.skin_detector(frame_output_1)
+		frame_justSkin = skindetection.skin_detector(frame_output_1, face_rectangles)
 		#frame_justSkin = skindetection.skin_detector(frame_output_2)
 		cv2.imshow('output video 3', frame_justSkin)
 		cv2.waitKey(int(500*1.0/VIDEO_FR))
