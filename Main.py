@@ -64,14 +64,15 @@ while video_capture.isOpened():
 		# Start of Phase 2
 		#frame_justSkin = skindetection.skin_detector(frame_output_1)
 		frame_justSkin = skindetection.skin_detector(frame_output_1, face_rectangles)
-	        hand_pos, frame_hand, frame_contours = \
-                    handdetection.find_active_hand(frame_justSkin)
 		cv2.imshow('output video 3', frame_justSkin)
                 
                 # find active hand
-                cv2.imshow('output video 4', frame_contours)
-		cv2.imshow('output video 5', frame_hand)
-		cv2.waitKey(int(500*1.0/VIDEO_FR))
+	        hand_pos, frame_hand, frame_contours = \
+                    handdetection.find_active_hand(frame_justSkin)
+                if hand_pos != (-1, -1):
+                    cv2.imshow('output video 4', frame_contours)
+		    cv2.imshow('output video 5', frame_hand)
+		    cv2.waitKey(int(500*1.0/VIDEO_FR))
 		#press q for breaking the loop
 		if cv2.waitKey(1) & 0xFF == ord("q"):
 			break

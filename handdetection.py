@@ -23,6 +23,7 @@ def find_active_hand(frame_input):
     # find active hand
     frame_cropped = np.array([[255, 255], [255, 255]])
     # TODO: add detection
+    crop_point = (-1, -1)
     if len(cnts) > 1:
         cnt_act = cnts[1]
         
@@ -32,9 +33,7 @@ def find_active_hand(frame_input):
         #pdb.set_trace()
         frame_cropped = \
             frame_input[p1[0, 1]:p2[0, 1], p1[0, 0]:p2[0, 0], :]
-        #pdb.set_trace()
-
-    crop_point = (-1, -1)
+        crop_point = (p1[0, 0], p1[0, 1])
     frame_output = frame_cropped
     
     if np.min(frame_output.shape) < 2:
