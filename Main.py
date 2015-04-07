@@ -54,12 +54,14 @@ while video_capture.isOpened():
 		## this part is for test, comment it in application
 		frame_out_face = frame_output_1.copy()
 		for (x, y, w, h) in face_rectangles:
-			cv2.rectangle(frame_out_face, (x, y) , (x+w, y+h), (0, 255, 0), 2)
-
+			cv2.rectangle(frame_out_face, (x, y) , 
+                                (x+w, y+h), (0, 255, 0), 2)
+                
 		cv2.imshow('output video face', frame_out_face)
+                #pdb.set_trace()
 		##
 
-		cv2.waitKey(int(1000*0.10/VIDEO_FR))
+		#cv2.waitKey(int(1000*0.10/VIDEO_FR))
 
 		# Start of Phase 2
 		#frame_justSkin = skindetection.skin_detector(frame_output_1)

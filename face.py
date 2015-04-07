@@ -9,7 +9,8 @@ import cv2
 
 def face_detect(image_input):
 	
-	face_cascade = cv2.CascadeClassifier('/home/mehdi/vision/haarcascade_frontalface_default.xml')
+	face_cascade = cv2.CascadeClassifier(
+            '../../SmartVision/haarcascade_frontalface_default.xml')
 	#eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
 	gray = cv2.cvtColor(image_input, cv2.COLOR_BGR2GRAY)
