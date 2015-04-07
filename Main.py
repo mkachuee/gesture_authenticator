@@ -10,9 +10,11 @@ import cv2
 import background
 import skindetection
 import face
+import handdetection
 # Script options
 VIDEO_SOURCE = \
-'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
+        '../../SmartVision/Hand_PatternDrawing.avi'
+#'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 #
 VIDEO_FR = 30.0
 # Script starts here
@@ -62,8 +64,13 @@ while video_capture.isOpened():
 		# Start of Phase 2
 		#frame_justSkin = skindetection.skin_detector(frame_output_1)
 		frame_justSkin = skindetection.skin_detector(frame_output_1, face_rectangles)
-		#frame_justSkin = skindetection.skin_detector(frame_output_2)
+	        hand_pos, frame_hand, frame_contours = \
+                    handdetection.find_active_hand(frame_justSkin)
 		cv2.imshow('output video 3', frame_justSkin)
+                
+                # find active hand
+                cv2.imshow('output video 4', frame_contours)
+		cv2.imshow('output video 5', frame_hand)
 		cv2.waitKey(int(500*1.0/VIDEO_FR))
 		#press q for breaking the loop
 		if cv2.waitKey(1) & 0xFF == ord("q"):
