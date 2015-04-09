@@ -7,10 +7,12 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+
 import background
 import skindetection
 import face
 import handdetection
+import handgesture
 # Script options
 VIDEO_SOURCE = \
         '../../SmartVision/Hand_PatternDrawing.avi'
@@ -71,9 +73,14 @@ while video_capture.isOpened():
                 # find active hand
 	        hand_pos, frame_hand, frame_contours = \
                     handdetection.find_active_hand(frame_justSkin)
+                
+                # find hand gesture
+                frame_gesture =  handgesture.detect_gesture(frame_hand)
+
                 if hand_pos != (-1, -1):
                     cv2.imshow('output video 4', frame_contours)
 		    cv2.imshow('output video 5', frame_hand)
+		    cv2.imshow('output video 6', frame_gesture)
 		    cv2.waitKey(int(500*1.0/VIDEO_FR))
 		#press q for breaking the loop
 		if cv2.waitKey(1) & 0xFF == ord("q"):
