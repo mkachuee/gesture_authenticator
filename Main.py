@@ -13,10 +13,18 @@ import skindetection
 import face
 import handdetection
 import handgesture
+import handmode
 # Script options
 VIDEO_SOURCE = \
         '../../SmartVision/Hand_PatternDrawing.avi'
 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
+
+# initialize of FSM variables
+count_2=0
+count_1=0
+count_n1=0
+HandMode="Deactive"
+
 #
 VIDEO_FR = 30.0
 # Script starts here
@@ -77,6 +85,10 @@ while video_capture.isOpened():
                 # find hand gesture
                 frame_gesture, est_gesture = \
                     handgesture.detect_gesture(frame_hand)
+
+		# find hand mode
+		HandMode,count_2,count_1,count_n1 = \
+			handmode.hand_mode(est_gesture,HandMode,count_2,count_1,count_n1)
                 
                 
                 # print hand position
@@ -84,7 +96,7 @@ while video_capture.isOpened():
                 print(hand_pos)
                 point_text = (hand_pos[0]+crop_point[1], 
                     hand_pos[1]+crop_point[0])
-                cv2.putText(frame_input,str(est_gesture), point_text, 
+                cv2.putText(frame_input,str(HandMode), point_text, 
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
 	        cv2.imshow('input video', frame_input)
 		cv2.imshow('output video 1', frame_output_1)
@@ -96,6 +108,6 @@ while video_capture.isOpened():
 		    cv2.imshow('output video 5', frame_hand)
 		    cv2.imshow('output video 6', frame_gesture)
 		    #cv2.waitKey(int(500*1.0/VIDEO_FR))
-		#press q for breaking the loop
+		#press q for breaking the loop & quit from process
 		if cv2.waitKey(1) & 0xFF == ord("q"):
 			break
