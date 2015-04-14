@@ -42,7 +42,7 @@ def skin_detector(frame_BGR_input, face_rectangles):
 	skin_detected = cv2.dilate(skin_detected, kernel_v, iterations=2)
 	
 	skin_detected = cv2.GaussianBlur(skin_detected, (3, 3), 0)
-	skin_detected = 255 * (np.uint8(skin_detected/255))
+	skin_detected = 255 * (np.uint8(skin_detected/150))
 
 	#cv2.imshow('Test', skin_detected)
 

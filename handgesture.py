@@ -27,7 +27,7 @@ def detect_gesture(input_frame):
         cv2.drawContours(input_frame, [cnt], -1, (0,255,0), 2)
         cv2.drawContours(input_frame, [hull], -1, (0,0,255), 2)
         # find convexity defects
-        cnt = cv2.approxPolyDP(cnt,0.03*cv2.arcLength(cnt,True),True)
+        cnt = cv2.approxPolyDP(cnt,0.025*cv2.arcLength(cnt,True),True)
         hull = cv2.convexHull(cnt,returnPoints = False)
         defects = np.zeros((0, 0))
         if hull.shape[0] > 3:
@@ -48,7 +48,7 @@ def detect_gesture(input_frame):
             num_points = defects.shape[0]
             est_gesture = -1
             if num_points == 0:
-                est_gesture = 3
+                est_gesture = -1
             elif num_points <= 2:
                 #pdb.set_trace()
                 #print(cnt[defects[0, 0][2]][0][1])

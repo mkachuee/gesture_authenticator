@@ -31,7 +31,7 @@ while video_capture.isOpened():
 	print('frame number: '+ str(frame_number))
 	print('frame time: '+ str(frame_time))
 	ret, frame_input = video_capture.read()
-	cv2.imshow('input video', frame_input)
+	#cv2.imshow('input video', frame_input)
 	# store first 3s frames
 	if frame_number < 2:
 		frames_first3s.append(frame_input)
@@ -47,8 +47,6 @@ while video_capture.isOpened():
 		if crop_point[0]==-1 or crop_point[1]==-1 or \
 			np.min([frame_output_1.shape[0], frame_output_1.shape[1]])<4:
 			continue
-		cv2.imshow('output video 1', frame_output_1)
-		cv2.imshow('output video 2', frame_output_2)
 
 		# face detection , where face_rectangles contain x,y as left upper corner & w,h for width and height
 		"""
@@ -69,8 +67,8 @@ while video_capture.isOpened():
 		# Start of Phase 2
 		#frame_justSkin = skindetection.skin_detector(frame_output_1)
                 face_rectangles = -1
-		frame_justSkin = skindetection.skin_detector(frame_output_1, face_rectangles)
-		cv2.imshow('output video 3', frame_justSkin)
+		frame_justSkin = skindetection.skin_detector(
+                    frame_output_1, face_rectangles)
                 
                 # find active hand
 	        hand_pos, frame_hand, frame_contours = \
@@ -79,9 +77,21 @@ while video_capture.isOpened():
                 # find hand gesture
                 frame_gesture, est_gesture = \
                     handgesture.detect_gesture(frame_hand)
+                
+                
+                # print hand position
                 print(est_gesture)
+                print(hand_pos)
+                point_text = (hand_pos[0]+crop_point[1], 
+                    hand_pos[1]+crop_point[0])
+                cv2.putText(frame_input,str(est_gesture), point_text, 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
+	        cv2.imshow('input video', frame_input)
+		cv2.imshow('output video 1', frame_output_1)
+		cv2.imshow('output video 2', frame_output_2)
+		cv2.imshow('output video 3', frame_justSkin)
 
-                if hand_pos != (-1, -1):
+                if hand_pos != (-1, -1): 
                     cv2.imshow('output video 4', frame_contours)
 		    cv2.imshow('output video 5', frame_hand)
 		    cv2.imshow('output video 6', frame_gesture)
