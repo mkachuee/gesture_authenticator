@@ -104,6 +104,11 @@ while video_capture.isOpened():
 		cv2.imshow('output video 3', frame_justSkin)
 
                 if hand_pos != (-1, -1): 
+                    frame_input[0:frame_hand.shape[0], 0:frame_hand.shape[1]] = \
+                        frame_hand
+                    cv2.putText(frame_input,str(HandMode), (frame_hand.shape[0], 
+                        frame_hand.shape[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 200, 0))
+                    cv2.imshow('input video', frame_input)
                     cv2.imshow('output video 4', frame_contours)
 		    cv2.imshow('output video 5', frame_hand)
 		    cv2.imshow('output video 6', frame_gesture)
