@@ -84,7 +84,7 @@ while video_capture.isOpened():
                 
                 # find hand gesture
                 frame_gesture, est_gesture = \
-                    handgesture.detect_gesture(frame_hand)
+                    handgesture.detect_gesture(frame_hand.copy())
 
 		# find hand mode
 		HandMode,count_2,count_1,count_n1 = \
@@ -96,8 +96,8 @@ while video_capture.isOpened():
                 print(hand_pos)
                 point_text = (hand_pos[0]+crop_point[1], 
                     hand_pos[1]+crop_point[0])
-                cv2.putText(frame_input,str(HandMode), point_text, 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
+                #cv2.putText(frame_input,str(HandMode), point_text, 
+                #    cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
 	        cv2.imshow('input video', frame_input)
 		cv2.imshow('output video 1', frame_output_1)
 		cv2.imshow('output video 2', frame_output_2)
