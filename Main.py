@@ -7,6 +7,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
+import cv
 
 import background
 import skindetection
@@ -18,6 +19,8 @@ import handmode
 VIDEO_SOURCE = \
         '../../SmartVision/Hand_PatternDrawing.avi'
 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
+
+WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
 
 # initialize of FSM variables
 count_2=0
@@ -99,19 +102,20 @@ while video_capture.isOpened():
                 #cv2.putText(frame_input,str(HandMode), point_text, 
                 #    cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
 	        cv2.imshow('input video', frame_input)
-		cv2.imshow('output video 1', frame_output_1)
-		cv2.imshow('output video 2', frame_output_2)
-		cv2.imshow('output video 3', frame_justSkin)
+		#cv2.imshow('output video 1', frame_output_1)
+		#cv2.imshow('output video 2', frame_output_2)
+		#cv2.imshow('output video 3', frame_justSkin)
 
                 if hand_pos != (-1, -1): 
                     frame_input[0:frame_hand.shape[0], 0:frame_hand.shape[1]] = \
                         frame_hand
                     cv2.putText(frame_input,str(HandMode), (frame_hand.shape[0], 
                         frame_hand.shape[1]), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 200, 0))
-                    cv2.imshow('input video', frame_input)
+                    cv2.imshow('Phase2 Final video', frame_input)
                     cv2.imshow('output video 4', frame_contours)
-		    cv2.imshow('output video 5', frame_hand)
+		    #cv2.imshow('output video 5', frame_hand)
 		    cv2.imshow('output video 6', frame_gesture)
+		    WriteFile.write(frame_input)
 		    #cv2.waitKey(int(500*1.0/VIDEO_FR))
 		#press q for breaking the loop & quit from process
 		if cv2.waitKey(1) & 0xFF == ord("q"):
