@@ -86,7 +86,7 @@ while video_capture.isOpened():
                     handdetection.find_active_hand(frame_justSkin)
                 
                 # find hand gesture
-                frame_gesture, est_gesture = \
+                frame_gesture, est_gesture, indicator = \
                     handgesture.detect_gesture(frame_hand.copy())
 
 		# find hand mode
@@ -97,10 +97,14 @@ while video_capture.isOpened():
                 # print hand position
                 print(est_gesture)
                 print(hand_pos)
-                point_text = (hand_pos[0]+crop_point[1], 
-                    hand_pos[1]+crop_point[0])
-                cv2.putText(frame_input,str(HandMode), point_text, 
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
+                if HandMode != 'Deactive': 
+                    point_text = (hand_pos[0]+crop_point[1]+indicator[0], 
+                        hand_pos[1]+crop_point[0]+indicator[1])
+                    cv2.putText(frame_input,str(HandMode), point_text, 
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
+                    if indicator[0] != -1:
+                        cv2.circle(frame_input, point_text, 5, [255,255,255], -1)
+
 	        cv2.imshow('input video', frame_input)
 		cv2.imshow('output video 1', frame_output_1)
 		cv2.imshow('output video 2', frame_output_2)

@@ -9,9 +9,10 @@ import cv2
 
 def detect_gesture(input_frame):
     # check the input
+    indicator = (-1, -1)
     est_gesture = -1
     if input_frame.shape[0] < 4:
-        return input_frame, est_gesture
+        return input_frame, est_gesture, indicator
     # convert to binary
     frame_gray = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)
     _, frame_bin = cv2.threshold(frame_gray, 32, 255, cv2.THRESH_BINARY)
@@ -55,6 +56,9 @@ def detect_gesture(input_frame):
                 if cnt[defects[0, 0][2]][0][1] > 20 and \
                         np.abs(input_frame.shape[0]-input_frame.shape[1]) > 20:
                     est_gesture = 2
+                    #pdb.set_trace()
+                    indicator = cnt[np.argmin(cnt, axis=0)[0, 1]][0]
+                    cv2.circle(input_frame,tuple(indicator),5,[255,255,255],-1)
             elif num_points > 3:
                 est_gesture=1
                 
@@ -62,4 +66,4 @@ def detect_gesture(input_frame):
             print(-1)
 
 
-    return frame_bin, est_gesture
+    return frame_bin, est_gesture, indicator
