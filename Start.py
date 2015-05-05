@@ -36,7 +36,7 @@ VIDEO_SOURCE = \
     '../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 
-WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
+#WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
 
 # initialize of FSM variables
 count_2=0
@@ -123,7 +123,7 @@ class UserInterface(QWidget):
     def button_start_clicked(self):
         print('Run name is : ' + self.lineedit_runname.text())
         print('Starting ...')
-        self.timer_0.start(1000/30)
+        self.timer_0.start(1000/VIDEO_FR)
 
     def button_stop_clicked(self):
         print('Stopped')
@@ -134,24 +134,83 @@ class UserInterface(QWidget):
         #self.showFullScreen()
 
     def timer_0_handler(self):
-        out, frame_input = main_loop()
-        image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
-            frame_input.shape[0], QImage.Format_RGB888).rgbSwapped()
-        pixmap_input = QPixmap.fromImage(image_input)
-        pixmap_input = pixmap_input.scaled(self.display_0.height(), self.display_0.width(),
+        # run main loop
+        frame_input, frame_output_1, frame_output_2 = main_loop()
+        # display frames
+        pixmap_0 = cv22pixmap(frame_input)
+        pixmap_0 = pixmap_0.scaled(self.display_0.height(), self.display_0.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
-        self.display_0.setPixmap(pixmap_input)
-        print(out)
+        self.display_0.setPixmap(pixmap_0)
+        
+        pixmap_1 = cv22pixmap(frame_output_1)
+        pixmap_1 = pixmap_1.scaled(self.display_1.height(), self.display_1.width(),
+            aspectRatioMode=Qt.KeepAspectRatio)
+        self.display_1.setPixmap(pixmap_1)
+
+        pixmap_2 = cv22pixmap(frame_output_2)
+        pixmap_2 = pixmap_2.scaled(self.display_2.height(), self.display_2.width(),
+            aspectRatioMode=Qt.KeepAspectRatio)
+        self.display_2.setPixmap(pixmap_2)
+
+def cv22pixmap(frame_input):
+    image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
+         frame_input.shape[0], frame_input.shape[1]*3,QImage.Format_RGB888).rgbSwapped()
+    pixmap = QPixmap.fromImage(image_input)
+    return pixmap
 
 # main loop for doing things
 def main_loop():
-    global frame_time, frame_number
+    global frame_time, frame_number, HandMode, count_1, count_2, count_n1
+    # outputs
+    frame_input = np.zeros((0, 0))
+    frame_output_1 = np.zeros((0, 0))
+    frame_output_2 = np.zeros((0, 0))
     main_loop.cnt += 1
     frame_number = frame_number + 1
+    frame_time = frame_number / VIDEO_FR
     # get a frame
     ret, frame_input = video_capture.read()
+    # store first 3s frames
+    if frame_number < 5:
+        frames_first3s.append(frame_input)
+    elif frame_number == 5:
+        main_loop.frame_background = np.uint8(np.mean(frames_first3s, axis=0))
+    # process from 3s
+    else:
+        crop_point, frame_output_11, frame_output_22 = \
+            background.remove_background(
+            frame_background=main_loop.frame_background, frame_input=frame_input)
+        # ignore empty frames
+        if crop_point[0]==-1 or crop_point[1]==-1 or \
+            np.min([frame_output_11.shape[0], frame_output_11.shape[1]])<4:
+            return frame_input, frame_output_1, frame_output_2
+        
+        # phase 2 starts here
+        face_rectangles = -1
+        frame_justSkin = skindetection.skin_detector(
+            frame_output_11, face_rectangles)
+        # find active hand
+        hand_pos, frame_hand, frame_contours = \
+            handdetection.find_active_hand(frame_justSkin)
+        # find hand gesture
+        frame_gesture, est_gesture, indicator = \
+            handgesture.detect_gesture(frame_hand)
+        # find hand mode
+        HandMode,count_2,count_1,count_n1 = \
+            handmode.hand_mode(est_gesture,HandMode,count_2,count_1,count_n1)
 
-    return main_loop.cnt, frame_input
+        if HandMode != 'Deactive':
+            point_text = (hand_pos[0]+crop_point[1]+indicator[0],
+                hand_pos[1]+crop_point[0]+indicator[1])
+            cv2.putText(frame_input,str(HandMode), point_text,
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (155, 200, 0))
+            if indicator[0] != -1:
+                cv2.circle(frame_input, point_text, 5, [255,255,255], -1)
+            
+            frame_output_2 = frame_hand
+        frame_output_1 = frame_output_11
+
+    return frame_input, frame_output_1, frame_output_2
 main_loop.cnt = 0
 
 if  __name__ == '__main__':
