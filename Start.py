@@ -22,7 +22,7 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (QWidget, QLCDNumber, QSlider, 
     QVBoxLayout, QGridLayout, QApplication, QAction, qApp, QLabel,
     QPushButton, QLineEdit, QRadioButton)
-from PyQt5.QtGui import QIcon, QPixmap, QPainter, QImage
+from PyQt5.QtGui import QIcon, QPixmap, QPainter, QImage, QFont
 
 import background
 import skindetection
@@ -35,7 +35,7 @@ import handmode
 VIDEO_SOURCE = \
     '../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
-
+write_file = ''
 #WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
 
 # initialize of FSM variables
@@ -67,7 +67,12 @@ class UserInterface(QWidget):
         self.timer_0 = QTimer()
         self.timer_0.timeout.connect(self.timer_0_handler)
         # labels
+        self.label_name = QLabel(
+            'Smart Environment Vision Project\nMohamad Kachuee, Mehdi Hosseini')
+        self.label_name.setFont(QFont('Serif', 16))
         self.label_runname = QLabel('Run Name', self)
+        self.label_time = QLabel('Time ', self)
+        self.label_capture = QLabel('Capture Source ', self)
         # displays
         self.display_0 = QLabel('display_0', self)
         self.display_0.resize(self.grid_size*32, self.grid_size*32)
@@ -92,15 +97,24 @@ class UserInterface(QWidget):
         self.button_start.clicked.connect(self.button_start_clicked)
         self.button_stop = QPushButton('Stop')
         self.button_stop.clicked.connect(self.button_stop_clicked)
+        self.button_capture = QPushButton('Open Capture Device')
+        self.button_capture.clicked.connect(self.button_capture_clicked)
         # radio buttons
-        self.radiobutton_option1 = QRadioButton('Option 1', self)
+        self.radiobutton_save = QRadioButton('Save Output ', self)
+        self.radiobutton_save.toggled.connect(self.radiobutton_save_toggled)
         # line edits
         self.lineedit_runname = QLineEdit()
-
-
+        self.lineedit_runname.setText('Run_0')
+        self.lineedit_capture = QLineEdit()
+        self.lineedit_capture.setText('0')
+        # lcds displays
+        self.lcd_time = QLCDNumber(self)
+        self.lcd_time.setNumDigits(3)
+        self.lcd_time.SegmentStyle(QLCDNumber.Filled)
         # place widgets
         grid = QGridLayout()
         grid.setSpacing(self.grid_size)
+        grid.addWidget(self.label_name, 0, 0)
         grid.addWidget(self.display_0, 0, 0, 32, 32)
         grid.addWidget(self.display_1, 31, 0, 16, 16)
         grid.addWidget(self.display_2, 31, 16, 16, 16)
@@ -108,9 +122,13 @@ class UserInterface(QWidget):
         grid.addWidget(self.button_stop, 1, 32, 1, 4)
         grid.addWidget(self.label_runname, 4, 32, 2, 2)
         grid.addWidget(self.lineedit_runname, 4, 34, 2, 2)
-        grid.addWidget(self.radiobutton_option1, 6, 32, 2, 4)
-
-
+        grid.addWidget(self.radiobutton_save, 6, 32, 2, 4)
+        grid.addWidget(self.label_time, 8, 32, 2, 2)
+        grid.addWidget(self.lcd_time, 8, 33, 2, 3)
+        grid.addWidget(self.label_capture, 10, 32, 2, 2)
+        grid.addWidget(self.lineedit_capture, 10, 34, 2, 2)
+        grid.addWidget(self.button_capture, 12, 32, 2, 4)
+        # set layout
         self.setLayout(grid)
         self.setGeometry(300, 300, 250, 150)
         self.setWindowTitle('Test')
@@ -119,6 +137,12 @@ class UserInterface(QWidget):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Escape:
             self.close()
+    def radiobutton_save_toggled(self, e):
+        global write_file
+        if self.radiobutton_save.isChecked():
+            write_file = cv2.VideoWriter(
+                self.lineedit_runname.text()+'.avi', 
+                cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
 
     def button_start_clicked(self):
         print('Run name is : ' + self.lineedit_runname.text())
@@ -132,6 +156,10 @@ class UserInterface(QWidget):
     def display_clicked(self, e):
         print('Entering full screen mode')
         #self.showFullScreen()
+
+    def button_capture_clicked(self):
+        global video_capture
+        video_capture = cv2.VideoCapture(int(self.lineedit_capture.text()))
 
     def timer_0_handler(self):
         # run main loop
@@ -151,6 +179,11 @@ class UserInterface(QWidget):
         pixmap_2 = pixmap_2.scaled(self.display_2.height(), self.display_2.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_2.setPixmap(pixmap_2)
+        # display time on the lcd
+        self.lcd_time.display(main_loop.frame_time)
+        # save the frame if the save option is set
+        if self.radiobutton_save.isChecked():
+            write_file.write(frame_input)
 
 def cv22pixmap(frame_input):
     image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
@@ -160,14 +193,14 @@ def cv22pixmap(frame_input):
 
 # main loop for doing things
 def main_loop():
-    global frame_time, frame_number, HandMode, count_1, count_2, count_n1
+    global frame_time, frame_number, HandMode, count_1, count_2, count_n1, video_capture
     # outputs
     frame_input = np.zeros((0, 0))
     frame_output_1 = np.zeros((0, 0))
     frame_output_2 = np.zeros((0, 0))
     main_loop.cnt += 1
     frame_number = frame_number + 1
-    frame_time = frame_number / VIDEO_FR
+    main_loop.frame_time = frame_number / VIDEO_FR
     # get a frame
     ret, frame_input = video_capture.read()
     # store first 3s frames
