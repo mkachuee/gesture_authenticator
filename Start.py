@@ -1,14 +1,4 @@
 
-"""
-ZetCode PyQt5 tutorial 
-
-In this example, we connect a signal
-of a QSlider to a slot of a QLCDNumber. 
-
-author: Jan Bodnar
-website: zetcode.com 
-last edited: January 2015
-"""
 # Imports
 import pdb
 import time
@@ -32,6 +22,7 @@ import handgesture
 import handmode
 
 # Script options
+FLAG_FULL_SCREEN = False
 VIDEO_SOURCE = \
     '../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
@@ -154,8 +145,12 @@ class UserInterface(QWidget):
         self.timer_0.stop()
 
     def display_clicked(self, e):
+        global FLAG_FULL_SCREEN
         print('Entering full screen mode')
-        #self.showFullScreen()
+        self.window_popup = PopupWindow()
+        self.window_popup.showMaximized()
+        self.window_popup.show()
+        FLAG_FULL_SCREEN = True 
 
     def button_capture_clicked(self):
         global video_capture
@@ -179,6 +174,10 @@ class UserInterface(QWidget):
         pixmap_2 = pixmap_2.scaled(self.display_2.height(), self.display_2.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_2.setPixmap(pixmap_2)
+        # display on popup
+        if FLAG_FULL_SCREEN:
+            pixmap_0 = cv22pixmap(frame_input)
+            self.window_popup.set_display(pixmap_0)
         # display time on the lcd
         self.lcd_time.display(main_loop.frame_time)
         # save the frame if the save option is set
@@ -190,6 +189,24 @@ def cv22pixmap(frame_input):
          frame_input.shape[0], frame_input.shape[1]*3,QImage.Format_RGB888).rgbSwapped()
     pixmap = QPixmap.fromImage(image_input)
     return pixmap
+
+class PopupWindow(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        self.display_popup = QLabel('display_popup', self)
+        self.screen = QApplication.desktop().screen()
+        self.display_popup.resize(self.screen.width(), self.screen.height())
+
+    def closeEvent(self, event):
+        global FLAG_FULL_SCREEN
+        FLAG_FULL_SCREEN = True
+        event.accept()
+
+    def set_display(self, pixmap):
+        pixmap = pixmap.scaled(self.screen.width(), self.screen.height(), 
+            aspectRatioMode=Qt.KeepAspectRatio)
+        self.display_popup.setPixmap(pixmap)
+
 
 # main loop for doing things
 def main_loop():
