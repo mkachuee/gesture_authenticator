@@ -128,8 +128,8 @@ class UserInterface(QWidget):
         self.lcd_time.SegmentStyle(QLCDNumber.Filled)
         # place widgets
         grid = QGridLayout()
-        grid.setSpacing(self.grid_size)
-        grid.addWidget(self.label_name, 0, 0)
+        #grid.setSpacing(self.grid_size)
+        #grid.addWidget(self.label_name, 0, 0)
         grid.addWidget(self.display_0, 0, 0, 32, 32)
         grid.addWidget(self.display_1, 31, 0, 16, 16)
         grid.addWidget(self.display_2, 31, 16, 16, 16)
@@ -206,8 +206,8 @@ class UserInterface(QWidget):
             frame_3 = np.zeros((2, 2))
         # display frames
         pixmap_0 = cv22pixmap(frame_1)
-        pixmap_0 = pixmap_0.scaled(self.display_0.height()/4, 
-            self.display_0.width()/4,
+        pixmap_0 = pixmap_0.scaled(self.display_0.height(), 
+            self.display_0.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_0.setPixmap(pixmap_0)
         
