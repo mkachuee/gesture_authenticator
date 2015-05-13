@@ -78,19 +78,26 @@ class UserInterface(QWidget):
         pixmap_1 = pixmap_0.scaled(self.display_1.height(), self.display_1.width(), 
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_1.setPixmap(pixmap_1)
+        self.display_1.mouseDoubleClickEvent = self.display_clicked
         
         self.display_2 = QLabel('display_2', self)
         self.display_2.resize(self.grid_size*16, self.grid_size*16)
         pixmap_2 = pixmap_2.scaled(self.display_2.height(), self.display_2.width(), 
             aspectRatioMode=Qt.KeepAspectRatio)
+        self.display_2.mouseDoubleClickEvent = self.display_clicked
         self.display_2.setPixmap(pixmap_2)
         # buttons
         self.button_start = QPushButton('Start')
         self.button_start.clicked.connect(self.button_start_clicked)
+        
         self.button_stop = QPushButton('Stop')
         self.button_stop.clicked.connect(self.button_stop_clicked)
+        
         self.button_capture = QPushButton('Open Capture Device')
         self.button_capture.clicked.connect(self.button_capture_clicked)
+        
+        self.button_restart = QPushButton('Restart')
+        self.button_restart.clicked.connect(self.button_restart_clicked)
         # radio buttons
         self.radiobutton_save = QRadioButton('Save Output ', self)
         self.radiobutton_save.toggled.connect(self.radiobutton_save_toggled)
@@ -128,6 +135,7 @@ class UserInterface(QWidget):
         grid.addWidget(self.display_2, 31, 16, 16, 16)
         grid.addWidget(self.button_start, 0, 32, 1, 4)
         grid.addWidget(self.button_stop, 1, 32, 1, 4)
+        grid.addWidget(self.button_restart, 2, 32, 1, 4)
         grid.addWidget(self.label_runname, 4, 32, 2, 2)
         grid.addWidget(self.lineedit_runname, 4, 34, 2, 2)
         grid.addWidget(self.radiobutton_save, 6, 32, 2, 4)
@@ -167,13 +175,18 @@ class UserInterface(QWidget):
         print('Stopped')
         self.timer_0.stop()
 
+    def button_restart_clicked(self):
+        global video_capture, frame_number
+        video_capture = cv2.VideoCapture(VIDEO_SOURCE)
+        frame_number = 0
+
     def display_clicked(self, e):
         global FLAG_FULL_SCREEN
         print('Entering full screen mode')
         self.window_popup = PopupWindow()
         self.window_popup.showMaximized()
         self.window_popup.show()
-        FLAG_FULL_SCREEN = True 
+        FLAG_FULL_SCREEN = True
 
     def button_capture_clicked(self):
         global video_capture
@@ -193,7 +206,8 @@ class UserInterface(QWidget):
             frame_3 = np.zeros((2, 2))
         # display frames
         pixmap_0 = cv22pixmap(frame_1)
-        pixmap_0 = pixmap_0.scaled(self.display_0.height(), self.display_0.width(),
+        pixmap_0 = pixmap_0.scaled(self.display_0.height()/4, 
+            self.display_0.width()/4,
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_0.setPixmap(pixmap_0)
         
@@ -208,7 +222,7 @@ class UserInterface(QWidget):
         self.display_2.setPixmap(pixmap_2)
         # display on popup
         if FLAG_FULL_SCREEN:
-            pixmap_0 = cv22pixmap(frame_input)
+            pixmap_0 = cv22pixmap(frame_1)
             self.window_popup.set_display(pixmap_0)
         # display time on the lcd
         self.lcd_time.display(main_loop.frame_time)
