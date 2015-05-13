@@ -24,6 +24,7 @@ import handmode
 
 # Script options
 FLAG_FULL_SCREEN = False
+FLAG_LEARN = True
 VIDEO_SOURCE = \
     '../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
@@ -105,6 +106,10 @@ class UserInterface(QWidget):
         self.checkbox_save1 = QCheckBox('Save 1', self)
         self.checkbox_save2 = QCheckBox('Save 2', self)
         self.checkbox_save3 = QCheckBox('Save 3', self)
+        
+        self.checkbox_learn = QCheckBox('Learn Mode ', self)
+        self.checkbox_learn.toggled.connect(
+            self.checkbox_learn_toggled)
         # combo boxes
         self.combobox_disp1 = QComboBox(self)
         self.combobox_disp1.addItems(['frame_input', 'frame_hand', 
@@ -128,7 +133,7 @@ class UserInterface(QWidget):
         self.lcd_time.SegmentStyle(QLCDNumber.Filled)
         # place widgets
         grid = QGridLayout()
-        #grid.setSpacing(self.grid_size)
+        grid.setSpacing(self.grid_size)
         #grid.addWidget(self.label_name, 0, 0)
         grid.addWidget(self.display_0, 0, 0, 32, 32)
         grid.addWidget(self.display_1, 31, 0, 16, 16)
@@ -150,6 +155,7 @@ class UserInterface(QWidget):
         grid.addWidget(self.combobox_disp1, 24, 32, 2, 4)
         grid.addWidget(self.combobox_disp2, 26, 32, 2, 4)
         grid.addWidget(self.combobox_disp3, 28, 32, 2, 4)
+        grid.addWidget(self.checkbox_learn, 30, 32, 2, 4)
         # set layout
         self.setLayout(grid)
         self.setGeometry(300, 300, 250, 150)
@@ -165,6 +171,12 @@ class UserInterface(QWidget):
             write_file = cv2.VideoWriter(
                 self.lineedit_runname.text()+'.avi', 
                 cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
+    def checkbox_learn_toggled(self, e):
+        global FLAG_LEARN
+        if self.checkbox_learn.isChecked():
+            FLAG_LEARN = True
+        else:
+            FLAG_LEARN = False
 
     def button_start_clicked(self):
         print('Run name is : ' + self.lineedit_runname.text())
