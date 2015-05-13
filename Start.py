@@ -328,11 +328,20 @@ def main_loop():
             frame_output_2 = frame_hand
         frame_output_1 = frame_output_11
 
+	if HandMode == 'Start':
+		main_loop.Sketch_points = []
+	if HandMode == 'Stop':
+		main_loop.Sketch_points = []
+	if HandMode == 'Active':
+		main_loop.Sketch_points.append(point_text)
+		for i,p1 in enumerate(main_loop.Sketch_points):
+			if i != (len(main_loop.Sketch_points)-1) :
+				cv2.line(frame_input, main_loop.Sketch_points[i], main_loop.Sketch_points[i+1], [0,255,0], 10)
         main_outputs['frame_output'] = frame_input
 
     return main_outputs
 main_loop.cnt = 0
-
+main_loop.Sketch_points = []
 if  __name__ == '__main__':
     
     app = QApplication(sys.argv)
