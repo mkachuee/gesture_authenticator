@@ -11,7 +11,8 @@ import cv
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (QWidget, QLCDNumber, QSlider, 
     QVBoxLayout, QGridLayout, QApplication, QAction, qApp, QLabel,
-    QPushButton, QLineEdit, QRadioButton)
+    QPushButton, QLineEdit, QRadioButton, QCheckBox, QListWidget, 
+    QComboBox)
 from PyQt5.QtGui import QIcon, QPixmap, QPainter, QImage, QFont
 
 import background
@@ -93,6 +94,22 @@ class UserInterface(QWidget):
         # radio buttons
         self.radiobutton_save = QRadioButton('Save Output ', self)
         self.radiobutton_save.toggled.connect(self.radiobutton_save_toggled)
+        # check boxes
+        self.checkbox_save1 = QCheckBox('Save 1', self)
+        self.checkbox_save2 = QCheckBox('Save 2', self)
+        self.checkbox_save3 = QCheckBox('Save 3', self)
+        # combo boxes
+        self.combobox_disp1 = QComboBox(self)
+        self.combobox_disp1.addItems(['frame_input', 'frame_hand', 
+            'frame_output', 'frame_foreground'])
+        
+        self.combobox_disp2 = QComboBox(self)
+        self.combobox_disp2.addItems(['frame_input', 'frame_hand', 
+            'frame_output', 'frame_foreground'])
+        
+        self.combobox_disp3 = QComboBox(self)
+        self.combobox_disp3.addItems(['frame_input', 'frame_hand', 
+            'frame_output', 'frame_foreground'])
         # line edits
         self.lineedit_runname = QLineEdit()
         self.lineedit_runname.setText('Run_0')
@@ -119,6 +136,12 @@ class UserInterface(QWidget):
         grid.addWidget(self.label_capture, 10, 32, 2, 2)
         grid.addWidget(self.lineedit_capture, 10, 34, 2, 2)
         grid.addWidget(self.button_capture, 12, 32, 2, 4)
+        grid.addWidget(self.checkbox_save1, 18, 32, 2, 4)
+        grid.addWidget(self.checkbox_save2, 20, 32, 2, 4)
+        grid.addWidget(self.checkbox_save3, 22, 32, 2, 4)
+        grid.addWidget(self.combobox_disp1, 24, 32, 2, 4)
+        grid.addWidget(self.combobox_disp2, 26, 32, 2, 4)
+        grid.addWidget(self.combobox_disp3, 28, 32, 2, 4)
         # set layout
         self.setLayout(grid)
         self.setGeometry(300, 300, 250, 150)
@@ -158,19 +181,28 @@ class UserInterface(QWidget):
 
     def timer_0_handler(self):
         # run main loop
-        frame_input, frame_output_1, frame_output_2 = main_loop()
+        main_out = main_loop()
+        # select three frame
+        try:
+            frame_1 = main_out[self.combobox_disp1.currentText()]
+            frame_2 = main_out[self.combobox_disp2.currentText()]
+            frame_3 = main_out[self.combobox_disp3.currentText()]
+        except:
+            frame_1 = np.zeros((2, 2))
+            frame_2 = np.zeros((2, 2))
+            frame_3 = np.zeros((2, 2))
         # display frames
-        pixmap_0 = cv22pixmap(frame_input)
+        pixmap_0 = cv22pixmap(frame_1)
         pixmap_0 = pixmap_0.scaled(self.display_0.height(), self.display_0.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_0.setPixmap(pixmap_0)
         
-        pixmap_1 = cv22pixmap(frame_output_1)
+        pixmap_1 = cv22pixmap(frame_2)
         pixmap_1 = pixmap_1.scaled(self.display_1.height(), self.display_1.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_1.setPixmap(pixmap_1)
 
-        pixmap_2 = cv22pixmap(frame_output_2)
+        pixmap_2 = cv22pixmap(frame_3)
         pixmap_2 = pixmap_2.scaled(self.display_2.height(), self.display_2.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_2.setPixmap(pixmap_2)
@@ -182,7 +214,12 @@ class UserInterface(QWidget):
         self.lcd_time.display(main_loop.frame_time)
         # save the frame if the save option is set
         if self.radiobutton_save.isChecked():
-            write_file.write(frame_input)
+            if self.checkbox_save1.isChecked():
+                write_file.write(frame_input)
+            elif self.checkbox_save2.isChecked():
+                write_file.write(frame_input)
+            else:
+                write_file.write(frame_input)
 
 def cv22pixmap(frame_input):
     image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
@@ -220,6 +257,7 @@ def main_loop():
     main_loop.frame_time = frame_number / VIDEO_FR
     # get a frame
     ret, frame_input = video_capture.read()
+    main_outputs = {'frame_input':frame_input.copy()}
     # store first 3s frames
     if frame_number < 5:
         frames_first3s.append(frame_input)
@@ -229,7 +267,9 @@ def main_loop():
     else:
         crop_point, frame_output_11, frame_output_22 = \
             background.remove_background(
-            frame_background=main_loop.frame_background, frame_input=frame_input)
+            frame_background=main_loop.frame_background, 
+            frame_input=frame_input)
+        main_outputs['frame_foreground'] = frame_output_11
         # ignore empty frames
         if crop_point[0]==-1 or crop_point[1]==-1 or \
             np.min([frame_output_11.shape[0], frame_output_11.shape[1]])<4:
@@ -239,16 +279,18 @@ def main_loop():
         face_rectangles = -1
         frame_justSkin = skindetection.skin_detector(
             frame_output_11, face_rectangles)
+        main_outputs['frame_skin'] = frame_justSkin
         # find active hand
         hand_pos, frame_hand, frame_contours = \
             handdetection.find_active_hand(frame_justSkin)
+        main_outputs['frame_hand'] = frame_hand
         # find hand gesture
         frame_gesture, est_gesture, indicator = \
             handgesture.detect_gesture(frame_hand)
         # find hand mode
         HandMode,count_2,count_1,count_n1 = \
             handmode.hand_mode(est_gesture,HandMode,count_2,count_1,count_n1)
-
+        main_outputs['state_hand'] = HandMode
         if HandMode != 'Deactive':
             point_text = (hand_pos[0]+crop_point[1]+indicator[0],
                 hand_pos[1]+crop_point[0]+indicator[1])
@@ -260,7 +302,9 @@ def main_loop():
             frame_output_2 = frame_hand
         frame_output_1 = frame_output_11
 
-    return frame_input, frame_output_1, frame_output_2
+        main_outputs['frame_output'] = frame_input
+
+    return main_outputs
 main_loop.cnt = 0
 
 if  __name__ == '__main__':
