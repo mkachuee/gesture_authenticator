@@ -336,7 +336,8 @@ def main_loop():
 		main_loop.Sketch_points.append(point_text)
 		for i,p1 in enumerate(main_loop.Sketch_points):
 			if i != (len(main_loop.Sketch_points)-1) :
-				cv2.line(frame_input, main_loop.Sketch_points[i], main_loop.Sketch_points[i+1], [0,255,0], 10)
+				if cv2.norm(main_loop.Sketch_points[i], main_loop.Sketch_points[i+1]) < 50:
+					cv2.line(frame_input, main_loop.Sketch_points[i], main_loop.Sketch_points[i+1], [0,255,0], 10)
         main_outputs['frame_output'] = frame_input
 
     return main_outputs
