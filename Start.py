@@ -25,6 +25,10 @@ import handmode
 # Script options
 FLAG_FULL_SCREEN = False
 FLAG_LEARN = True
+TEXT_NAME = ''
+KEYRING = []
+PATTERN_BUFFER = np.zeros((2, 2), np.uint8)
+
 VIDEO_SOURCE = \
     '../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
@@ -69,14 +73,16 @@ class UserInterface(QWidget):
         # displays
         self.display_0 = QLabel('display_0', self)
         self.display_0.resize(self.grid_size*32, self.grid_size*32)
-        pixmap_0 = pixmap_0.scaled(self.display_0.height(), self.display_0.width(), 
+        pixmap_0 = pixmap_0.scaled(self.display_0.height(), 
+            self.display_0.width(), 
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_0.setPixmap(pixmap_0)
         self.display_0.mouseDoubleClickEvent = self.display_clicked
 
         self.display_1 = QLabel('display_1', self)
         self.display_1.resize(self.grid_size*16, self.grid_size*16)
-        pixmap_1 = pixmap_0.scaled(self.display_1.height(), self.display_1.width(), 
+        pixmap_1 = pixmap_0.scaled(self.display_1.height(), 
+            self.display_1.width(), 
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_1.setPixmap(pixmap_1)
         self.display_1.mouseDoubleClickEvent = self.display_clicked
@@ -108,25 +114,29 @@ class UserInterface(QWidget):
         self.checkbox_save3 = QCheckBox('Save 3', self)
         
         self.checkbox_learn = QCheckBox('Learn Mode ', self)
+        self.checkbox_learn.setChecked(True)
         self.checkbox_learn.toggled.connect(
             self.checkbox_learn_toggled)
         # combo boxes
         self.combobox_disp1 = QComboBox(self)
-        self.combobox_disp1.addItems(['frame_input', 'frame_hand', 
-            'frame_output', 'frame_foreground'])
-        
+        list_framename = ['frame_input', 'frame_hand', 
+            'frame_output', 'frame_foreground', 'frame_pattern']
+        self.combobox_disp1.addItems(list_framename)
+
         self.combobox_disp2 = QComboBox(self)
-        self.combobox_disp2.addItems(['frame_input', 'frame_hand', 
-            'frame_output', 'frame_foreground'])
+        self.combobox_disp2.addItems(list_framename)
         
         self.combobox_disp3 = QComboBox(self)
-        self.combobox_disp3.addItems(['frame_input', 'frame_hand', 
-            'frame_output', 'frame_foreground'])
+        self.combobox_disp3.addItems(list_framename)
         # line edits
         self.lineedit_runname = QLineEdit()
         self.lineedit_runname.setText('Run_0')
         self.lineedit_capture = QLineEdit()
         self.lineedit_capture.setText('0')
+        self.lineedit_name = QLineEdit()
+        self.lineedit_name.setText('MR. Jack')
+        global TEXT_NAME
+        TEXT_NAME =self.lineedit_name.text()
         # lcds displays
         self.lcd_time = QLCDNumber(self)
         self.lcd_time.setNumDigits(3)
@@ -156,6 +166,7 @@ class UserInterface(QWidget):
         grid.addWidget(self.combobox_disp2, 26, 32, 2, 4)
         grid.addWidget(self.combobox_disp3, 28, 32, 2, 4)
         grid.addWidget(self.checkbox_learn, 30, 32, 2, 4)
+        grid.addWidget(self.lineedit_name, 32, 32, 2, 4)
         # set layout
         self.setLayout(grid)
         self.setGeometry(300, 300, 250, 150)
@@ -172,9 +183,10 @@ class UserInterface(QWidget):
                 self.lineedit_runname.text()+'.avi', 
                 cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
     def checkbox_learn_toggled(self, e):
-        global FLAG_LEARN
+        global FLAG_LEARN, TEXT_NAME
         if self.checkbox_learn.isChecked():
             FLAG_LEARN = True
+            TEXT_NAME = self.lineedit_name.text()
         else:
             FLAG_LEARN = False
 
@@ -247,10 +259,19 @@ class UserInterface(QWidget):
             else:
                 write_file.write(frame_input)
 
-def cv22pixmap(frame_input):
-    image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
-         frame_input.shape[0], frame_input.shape[1]*3,QImage.Format_RGB888).rgbSwapped()
+def cv22pixmap(frame_input, channels=3):
+    if len(frame_input.shape) == 3:
+        image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
+             frame_input.shape[0], frame_input.shape[1]*channels, 
+            QImage.Format_RGB888).rgbSwapped()
+    else:
+        channels = 1
+        image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
+             frame_input.shape[0], frame_input.shape[1]*channels, 
+             QImage.Format_Indexed8)
+        
     pixmap = QPixmap.fromImage(image_input)
+    
     return pixmap
 
 class PopupWindow(QWidget):
@@ -273,7 +294,8 @@ class PopupWindow(QWidget):
 
 # main loop for doing things
 def main_loop():
-    global frame_time, frame_number, HandMode, count_1, count_2, count_n1, video_capture
+    global frame_time, frame_number, HandMode, count_1, count_2, \
+        count_n1, video_capture, KEYRING, PATTERN_BUFFER, TEXT_NAME
     # outputs
     frame_input = np.zeros((0, 0))
     frame_output_1 = np.zeros((0, 0))
@@ -328,21 +350,48 @@ def main_loop():
             frame_output_2 = frame_hand
         frame_output_1 = frame_output_11
 
+        # phase 4 starts here
 	if HandMode == 'Start':
-		main_loop.Sketch_points = []
-	if HandMode == 'Stop':
-		main_loop.Sketch_points = []
-	if HandMode == 'Active':
-		main_loop.Sketch_points.append(point_text)
-		for i,p1 in enumerate(main_loop.Sketch_points):
-			if i != (len(main_loop.Sketch_points)-1) :
-				if cv2.norm(main_loop.Sketch_points[i], main_loop.Sketch_points[i+1]) < 50:
-					cv2.line(frame_input, main_loop.Sketch_points[i], main_loop.Sketch_points[i+1], [0,255,0], 10)
+            main_loop.Sketch_points = []
+            # start saving points
+            PATTERN_BUFFER = np.zeros((frame_input.shape[0], 
+                frame_input.shape[1]), np.uint8)
+	
+        if HandMode == 'Stop':
+            # crop black areas
+            ind = np.nonzero(PATTERN_BUFFER)
+            if len(ind[0] != 0):
+                crop_point = (np.min(ind[0]), np.min(ind[1]))
+                PATTERN_BUFFER = PATTERN_BUFFER[
+                    np.min(ind[0]):np.max(ind[0]),
+                    np.min(ind[1]):np.max(ind[1])]
+	    if FLAG_LEARN:
+                print('learning a new pattern')
+                KEYRING.append((PATTERN_BUFFER, TEXT_NAME))
+            else:
+                print('start matching now')
+                print((PATTERN_BUFFER.shape, TEXT_NAME))
+                
+	
+        if HandMode == 'Active':
+            cv2.circle(PATTERN_BUFFER, point_text, 5, [255], -1)
+	    main_loop.Sketch_points.append(point_text)
+	    for i,p1 in enumerate(main_loop.Sketch_points):
+		if i != (len(main_loop.Sketch_points)-1) :
+                    if cv2.norm(main_loop.Sketch_points[i], 
+                        main_loop.Sketch_points[i+1]) < 50:
+                            cv2.line(frame_input, 
+                                main_loop.Sketch_points[i], 
+                                main_loop.Sketch_points[i+1], 
+                                    [0,255,0], 10)
         main_outputs['frame_output'] = frame_input
+        main_outputs['frame_pattern'] = cv2.cvtColor(
+            PATTERN_BUFFER, cv2.COLOR_GRAY2BGR)
 
     return main_outputs
 main_loop.cnt = 0
 main_loop.Sketch_points = []
+
 if  __name__ == '__main__':
     
     app = QApplication(sys.argv)
