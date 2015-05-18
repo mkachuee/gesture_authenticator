@@ -44,7 +44,7 @@ def detect_gesture(input_frame):
                 cv2.line(input_frame,start,end,[0,255,0],2)
                 cv2.circle(input_frame,far,5,[0,0,255],-1)
             #print(i+1)
-            print(input_frame.shape)
+            #print(input_frame.shape)
             # estimate hand gesture
             num_points = defects.shape[0]
             est_gesture = -1
@@ -63,7 +63,7 @@ def detect_gesture(input_frame):
                 est_gesture=1
                 
         except:
-            print(-1)
+            pass#print(-1)
 
 
     return frame_bin, est_gesture, indicator
