@@ -27,7 +27,7 @@ FLAG_FULL_SCREEN = False
 FLAG_LEARN = True
 TEXT_NAME = ''
 KEYRING = []
-PATTERN_BUFFER = np.zeros((2, 2), np.uint8)
+PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
 
 VIDEO_SOURCE = \
     '../../SmartVision/Hand_PatternDrawing.avi'
@@ -359,7 +359,7 @@ def main_loop():
 	
         if HandMode == 'Stop':
             # crop black areas
-            ind = np.nonzero(PATTERN_BUFFER)
+            ind = np.nonzero(PATTERN_BUFFER)#cv2.medianBlur(PATTERN_BUFFER, 4))
             if len(ind[0] != 0):
                 crop_point = (np.min(ind[0]), np.min(ind[1]))
                 PATTERN_BUFFER = PATTERN_BUFFER[
@@ -374,16 +374,22 @@ def main_loop():
                 
 	
         if HandMode == 'Active':
-            cv2.circle(PATTERN_BUFFER, point_text, 5, [255], -1)
+            #cv2.circle(PATTERN_BUFFER, point_text, 5, [255], -1)
 	    main_loop.Sketch_points.append(point_text)
 	    for i,p1 in enumerate(main_loop.Sketch_points):
 		if i != (len(main_loop.Sketch_points)-1) :
                     if cv2.norm(main_loop.Sketch_points[i], 
-                        main_loop.Sketch_points[i+1]) < 50:
+                        main_loop.Sketch_points[i+1]) < 80:
                             cv2.line(frame_input, 
                                 main_loop.Sketch_points[i], 
                                 main_loop.Sketch_points[i+1], 
                                     [0,255,0], 10)
+                            cv2.line(PATTERN_BUFFER, 
+                                main_loop.Sketch_points[i], 
+                                main_loop.Sketch_points[i+1], 
+                                    [255], 5)
+                    else:
+                        main_loop.Sketch_points[i+1] = main_loop.Sketch_points[i]
         main_outputs['frame_output'] = frame_input
         main_outputs['frame_pattern'] = cv2.cvtColor(
             PATTERN_BUFFER, cv2.COLOR_GRAY2BGR)
