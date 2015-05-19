@@ -21,6 +21,7 @@ import face
 import handdetection
 import handgesture
 import handmode
+import pattern_match
 
 # Script options
 FLAG_FULL_SCREEN = False
@@ -39,6 +40,7 @@ write_file = ''
 count_2=0
 count_1=0
 count_n1=0
+Last_HandMode="Deactive"
 HandMode="Deactive"
 VIDEO_FR = 30.0
 # Script starts here
@@ -336,6 +338,7 @@ def main_loop():
         frame_gesture, est_gesture, indicator = \
             handgesture.detect_gesture(frame_hand)
         # find hand mode
+	Last_HandMode = HandMode
         HandMode,count_2,count_1,count_n1 = \
             handmode.hand_mode(est_gesture,HandMode,count_2,count_1,count_n1)
         main_outputs['state_hand'] = HandMode
@@ -357,7 +360,7 @@ def main_loop():
             PATTERN_BUFFER = np.zeros((frame_input.shape[0], 
                 frame_input.shape[1]), np.uint8)
 	
-        if HandMode == 'Stop':
+        if HandMode == 'Stop' and Last_HandMode == 'Active':
             # crop black areas
             ind = np.nonzero(PATTERN_BUFFER)#cv2.medianBlur(PATTERN_BUFFER, 4))
             if len(ind[0] != 0):
@@ -367,10 +370,17 @@ def main_loop():
                     np.min(ind[1]):np.max(ind[1])]
 	    if FLAG_LEARN:
                 print('learning a new pattern')
-                KEYRING.append((PATTERN_BUFFER, TEXT_NAME))
+                faces = face.face_detect(frame_output_11)
+		for (x, y, w, h) in faces:
+			face_box = frame_output_11[y:y+h,x:x+w]
+		cv2.imshow('output video 1', face_box)
+		KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
             else:
                 print('start matching now')
-                print((PATTERN_BUFFER.shape, TEXT_NAME))
+		pattern_name, pattern_index = pattern_match.match_pattern(PATTERN_BUFFER, KEYRING)
+                #print((PATTERN_BUFFER.shape, TEXT_NAME))
+		print((pattern_name, pattern_index))
+		
                 
 	
         if HandMode == 'Active':
