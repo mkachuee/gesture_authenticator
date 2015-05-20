@@ -3,10 +3,12 @@
 import pdb
 import time
 import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 import cv
+import pyttsx
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (QWidget, QLCDNumber, QSlider, 
@@ -48,6 +50,11 @@ video_capture = cv2.VideoCapture(VIDEO_SOURCE)
 frame_number = 0
 frame_time = 0
 frames_first3s = []
+
+# tts engine
+tts_engine = pyttsx.init()
+tts_engine.setProperty('rate', 70)
+tts_engine.runAndWait()
 
 class UserInterface(QWidget):
     
@@ -124,12 +131,15 @@ class UserInterface(QWidget):
         list_framename = ['frame_input', 'frame_hand', 
             'frame_output', 'frame_foreground', 'frame_pattern']
         self.combobox_disp1.addItems(list_framename)
+        self.combobox_disp1.setCurrentText('frame_output')
 
         self.combobox_disp2 = QComboBox(self)
         self.combobox_disp2.addItems(list_framename)
+        self.combobox_disp2.setCurrentText('frame_foreground')
         
         self.combobox_disp3 = QComboBox(self)
         self.combobox_disp3.addItems(list_framename)
+        self.combobox_disp3.setCurrentText('frame_hand')
         # line edits
         self.lineedit_runname = QLineEdit()
         self.lineedit_runname.setText('Run_0')
@@ -219,6 +229,7 @@ class UserInterface(QWidget):
         video_capture = cv2.VideoCapture(int(self.lineedit_capture.text()))
 
     def timer_0_handler(self):
+        global KEYRING
         # run main loop
         main_out = main_loop()
         # select three frame
@@ -260,6 +271,29 @@ class UserInterface(QWidget):
                 write_file.write(frame_input)
             else:
                 write_file.write(frame_input)
+        # if key status is other than -2
+        try:
+            if main_out['key_status'] != -2:
+                self.window_access = PopupAccess()
+                if main_out['key_status'] != -1:
+                    self.window_access.set_message(
+                        'Wellcome ' + KEYRING[main_out['key_status']][0])
+                    self.window_access.set_display(
+                        cv22pixmap(KEYRING[main_out['key_status']][2]))
+                    print('Access granted')
+                    tts_engine.say('Access granted')
+                    tts_engine.say(
+                        '    Wellcome ' + KEYRING[main_out['key_status']][0])
+                    tts_engine.runAndWait()
+                else:
+                    self.window_access.set_message('Access denied')
+                    self.window_access.set_display(QPixmap('denied.png'))
+                    print('Access denied')
+                    tts_engine.say('Access denied')
+                    tts_engine.runAndWait()
+                self.window_access.show()
+        except:
+            pass
 
 def cv22pixmap(frame_input, channels=3):
     if len(frame_input.shape) == 3:
@@ -293,6 +327,29 @@ class PopupWindow(QWidget):
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_popup.setPixmap(pixmap)
 
+class PopupAccess(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        #self.resize( 200, 200)
+        # displays
+        self.display_image = QLabel('display_image', self)
+
+        # labels
+        self.label_message = QLabel('message', self)
+
+        # place them on a grid
+        grid = QGridLayout()
+
+        grid.addWidget(self.display_image, 0, 0, 16, 16)
+        grid.addWidget(self.label_message, 16, 0, 4, 8)
+        
+        self.setLayout(grid)
+
+    def set_display(self, pixmap):
+        self.display_image.setPixmap(pixmap)
+
+    def set_message(self, message):
+        self.label_message.setText(message)
 
 # main loop for doing things
 def main_loop():
@@ -306,8 +363,14 @@ def main_loop():
     frame_number = frame_number + 1
     main_loop.frame_time = frame_number / VIDEO_FR
     # get a frame
-    ret, frame_input = video_capture.read()
-    main_outputs = {'frame_input':frame_input.copy()}
+    try:
+        ret, frame_input = video_capture.read()
+        main_outputs = {'frame_input':frame_input.copy()}
+    except:
+        frame_input = np.zeros((2, 2))
+        main_outputs = {'frame_input':frame_input.copy()}
+
+    main_outputs['key_status'] = -2 # -2 means do nothing
     # store first 3s frames
     if frame_number < 5:
         frames_first3s.append(frame_input)
@@ -373,13 +436,16 @@ def main_loop():
                 faces = face.face_detect(frame_output_11)
 		for (x, y, w, h) in faces:
 			face_box = frame_output_11[y:y+h,x:x+w]
-		cv2.imshow('output video 1', face_box)
+		#cv2.imshow('output video 1', face_box)
 		KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
+                tts_engine.say('a new pattern registered')
+                tts_engine.runAndWait()
             else:
                 print('start matching now')
 		pattern_name, pattern_index = pattern_match.match_pattern(PATTERN_BUFFER, KEYRING)
                 #print((PATTERN_BUFFER.shape, TEXT_NAME))
 		print((pattern_name, pattern_index))
+                main_outputs['key_status'] = pattern_index
 		
                 
 	
