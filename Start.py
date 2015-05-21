@@ -64,7 +64,7 @@ class UserInterface(QWidget):
         self.ui_init()
 
     def ui_init(self):
-        self.grid_size = 10
+        self.grid_size = 8
         pixmap_0 = QPixmap('0.jpg')
         pixmap_1 = QPixmap('0.jpg')
         pixmap_2 = QPixmap('0.jpg')
@@ -181,7 +181,7 @@ class UserInterface(QWidget):
         grid.addWidget(self.lineedit_name, 32, 32, 2, 4)
         # set layout
         self.setLayout(grid)
-        self.setGeometry(300, 300, 250, 150)
+        #self.setGeometry(200, 200, 150, 150)
         self.setWindowTitle('Test')
         self.show()
 
@@ -336,7 +336,8 @@ class PopupAccess(QWidget):
 
         # labels
         self.label_message = QLabel('message', self)
-
+        self.label_message.setFont(QFont('Serif', 26))
+        
         # place them on a grid
         grid = QGridLayout()
 
@@ -346,6 +347,8 @@ class PopupAccess(QWidget):
         self.setLayout(grid)
 
     def set_display(self, pixmap):
+        pixmap = pixmap.scaled(100, 100, 
+            aspectRatioMode=Qt.KeepAspectRatio)
         self.display_image.setPixmap(pixmap)
 
     def set_message(self, message):
