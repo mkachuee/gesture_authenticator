@@ -56,8 +56,8 @@ def remove_background(frame_background, frame_input):
 
     frame_mask = frame_dilate
 
-    frame_output = np.tile(frame_mask.transpose()/255, \
-        (3, 1, 1)).transpose() * frame_in_cropped
-    
+    #frame_output = np.tile(frame_mask.transpose()/255, \
+    #    (3, 1, 1)).transpose() * frame_in_cropped
+    frame_output = cv2.bitwise_and(frame_in_cropped, frame_in_cropped, mask=frame_mask)
     return crop_point, frame_output, frame_cropped
 
