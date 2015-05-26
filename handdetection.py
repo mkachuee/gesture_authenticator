@@ -26,7 +26,7 @@ def find_active_hand(frame_input):
     cv2.drawContours(frame_contours, cnts, -1, (0,255,0), 3)
     # find active hand
     frame_cropped = np.array([[255, 255], [255, 255]])
-    # TODO: add detection
+    # detect it
     crop_point = (-1, -1)
     if len(cnts) > 1:
         cnt_act = cnts[1]
@@ -46,13 +46,11 @@ def find_active_hand(frame_input):
         crop_point = (p1[0, 0], p1[0, 1])
     else:
         pass
-	#print('AAAA')
     frame_output = frame_cropped
 
     
     if np.min(frame_output.shape) < 2:
         crop_point = (-1, -1)
         frame_output = np.array([[255, 255], [255, 255]])
-	#print('BBBB')
 
     return crop_point, frame_output, frame_contours

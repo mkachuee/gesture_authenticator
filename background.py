@@ -13,11 +13,8 @@ def remove_background(frame_background, frame_input):
     """
     This function removes background from the frame_input
     """
-    #frame_background_gray = cv2.cvtColor(frame_background, cv2.COLOR_BGR2GRAY)
     frame_input_gray = cv2.cvtColor(frame_input, cv2.COLOR_BGR2GRAY)
     # remove background
-    #frame_output_4 = np.uint8(
-    #    np.abs(np.int_(frame_background_gray) -np.int_(frame_input_gray)))
     frame_input_gray = cv2.equalizeHist(frame_input_gray)
     frame_output_4 = frame_background.apply(frame_input_gray)
     # convert to binary image
@@ -25,8 +22,6 @@ def remove_background(frame_background, frame_input):
         frame_output_4, 128, 255, cv2.THRESH_BINARY)
 
     # extra precessings
-    #frame_output_gaussian = cv2.GaussianBlur(frame_output_6, (3, 3), 0, 0)
-    
     # median of image to remove salt and papper noise
     frame_median = cv2.medianBlur(frame_output_5, 3)
     
@@ -58,9 +53,6 @@ def remove_background(frame_background, frame_input):
     
 
     frame_mask = frame_dilate
-
-    #frame_output = np.tile(frame_mask.transpose()/255, \
-    #    (3, 1, 1)).transpose() * frame_in_cropped
     frame_output = cv2.bitwise_and(frame_in_cropped, frame_in_cropped, mask=frame_mask)
     return crop_point, frame_output, frame_cropped
 

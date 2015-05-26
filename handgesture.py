@@ -43,30 +43,23 @@ def detect_gesture(input_frame):
                 start = tuple(cnt[s][0])
                 end = tuple(cnt[e][0])
                 far = tuple(cnt[f][0])
-                #dist = cv2.pointPolygonTest(cnt,centr,True)
                 cv2.line(input_frame,start,end,[0,255,0],2)
                 cv2.circle(input_frame,far,5,[0,0,255],-1)
-            #print(i+1)
-            #print(input_frame.shape)
             # estimate hand gesture
             num_points = defects.shape[0]
             est_gesture = -1
             if num_points == 0:
                 est_gesture = -1
             elif num_points <= 2:
-                #pdb.set_trace()
-                #print(cnt[defects[0, 0][2]][0][1])
                 if cnt[defects[0, 0][2]][0][1] > 20 and \
                         np.abs(input_frame.shape[0]-input_frame.shape[1]) >5:
                     est_gesture = 2
-                    #pdb.set_trace()
                     indicator = cnt[np.argmin(cnt, axis=0)[0, 1]][0]
                     cv2.circle(input_frame,tuple(indicator),5,[255,255,255],-1)
             elif num_points > 3:
                 est_gesture=1
-            #indicator = cnt[np.argmin(cnt, axis=0)[0, 1]][0]    
         except:
-            pass#print(-1)
+            pass
 
 
     return frame_bin, est_gesture, indicator
