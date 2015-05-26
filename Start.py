@@ -32,13 +32,17 @@ TEXT_NAME = ''
 KEYRING = []
 PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
 
+
 VIDEO_SOURCE = \
-    '../../SmartVision/Hand_PatternDrawing.avi'
+    '0.avi'
+    #'../../S474martVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 write_file = ''
 #WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
 
 # initialize of FSM variables
+fgbg = cv2.BackgroundSubtractorMOG2(history=50, varThreshold=332)
+
 count_2=0
 count_1=0
 count_n1=0
@@ -50,7 +54,8 @@ video_capture = cv2.VideoCapture(VIDEO_SOURCE)
 frame_number = 0
 frame_time = 0
 frames_first3s = []
-
+hand_points = []
+crop_points = []
 # tts engine
 tts_engine = pyttsx.init()
 tts_engine.setProperty('rate', 70)
@@ -357,7 +362,8 @@ class PopupAccess(QWidget):
 # main loop for doing things
 def main_loop():
     global frame_time, frame_number, HandMode, count_1, count_2, \
-        count_n1, video_capture, KEYRING, PATTERN_BUFFER, TEXT_NAME
+        count_n1, video_capture, KEYRING, PATTERN_BUFFER, TEXT_NAME, fgbg, \
+        hand_points, crop_points
     # outputs
     frame_input = np.zeros((0, 0))
     frame_output_1 = np.zeros((0, 0))
@@ -368,9 +374,12 @@ def main_loop():
     # get a frame
     try:
         ret, frame_input = video_capture.read()
+        if ret == 0:
+            frame_input = np.zeros((3, 2, 2))
+        frame_input = cv2.resize(frame_input, (1080, 720))
         main_outputs = {'frame_input':frame_input.copy()}
     except:
-        frame_input = np.zeros((2, 2))
+        frame_input = np.zeros((3, 2, 2))
         main_outputs = {'frame_input':frame_input.copy()}
 
     main_outputs['key_status'] = -2 # -2 means do nothing
@@ -383,7 +392,7 @@ def main_loop():
     else:
         crop_point, frame_output_11, frame_output_22 = \
             background.remove_background(
-            frame_background=main_loop.frame_background, 
+            frame_background=fgbg, 
             frame_input=frame_input)
         main_outputs['frame_foreground'] = frame_output_11
         # ignore empty frames
@@ -393,16 +402,37 @@ def main_loop():
         
         # phase 2 starts here
         face_rectangles = -1
-        frame_justSkin = skindetection.skin_detector(
-            frame_output_11, face_rectangles)
+        frame_skin, frame_justSkin = skindetection.skin_detector2(
+            frame_input, frame_output_11, face_rectangles)
         main_outputs['frame_skin'] = frame_justSkin
         # find active hand
         hand_pos, frame_hand, frame_contours = \
             handdetection.find_active_hand(frame_justSkin)
-        main_outputs['frame_hand'] = frame_hand
+        
+        hand_points.insert(1, hand_pos)
+        crop_points.insert(1, crop_point)
+        if len(hand_points) > 30:
+            del hand_points[30]
+            del crop_points[30]
+
+	hand_points_mean = np.mean(hand_points, axis=0)
+        crop_points_mean = np.mean(crop_points, axis=0)
+        dist = np.sum(((hand_points_mean - hand_pos)**2))
+        print(dist)
+        if dist > 100000:
+            print('HHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
+            hand_pos =  (int(hand_points_mean[0]), int(hand_points_mean[1])) 
+            crop_point =  (int(crop_points_mean[0]), int(crop_points_mean[1])) 
+        
+        frame_h =  frame_skin[hand_pos[1]-20+crop_point[0]:hand_pos[1]+frame_hand.shape[0]+crop_point[0]+20, hand_pos[0]-20+crop_point[1]:hand_pos[0]+frame_hand.shape[1]+20+crop_point[1], :]	
+	hand_pos = (hand_pos[0]-20,hand_pos[1]-20)
+	#print('AA', (crop_point[1],crop_point[0]), (hand_pos[1], hand_pos[0]) , frame_hand.shape)
+        if frame_h is None:
+            frame_h = np.zeros((2, 2))
+        main_outputs['frame_hand'] = frame_h
         # find hand gesture
         frame_gesture, est_gesture, indicator = \
-            handgesture.detect_gesture(frame_hand)
+            handgesture.detect_gesture(frame_h)
         # find hand mode
 	Last_HandMode = HandMode
         HandMode,count_2,count_1,count_n1 = \
@@ -421,6 +451,11 @@ def main_loop():
 
         # phase 4 starts here
 	if HandMode == 'Start':
+            main_loop.Sketch_points = []
+            # start saving points
+            PATTERN_BUFFER = np.zeros((frame_input.shape[0], 
+                frame_input.shape[1]), np.uint8)
+	elif HandMode == 'Deactive':
             main_loop.Sketch_points = []
             # start saving points
             PATTERN_BUFFER = np.zeros((frame_input.shape[0], 
@@ -454,7 +489,10 @@ def main_loop():
 	
         if HandMode == 'Active':
             #cv2.circle(PATTERN_BUFFER, point_text, 5, [255], -1)
-	    main_loop.Sketch_points.append(point_text)
+	    if indicator[0] == -1:
+		main_loop.Sketch_points.append(main_loop.Sketch_points[-1])
+	    else:	    
+		main_loop.Sketch_points.append(point_text)
 	    for i,p1 in enumerate(main_loop.Sketch_points):
 		if i != (len(main_loop.Sketch_points)-1) :
                     if cv2.norm(main_loop.Sketch_points[i], 

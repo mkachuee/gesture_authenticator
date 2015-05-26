@@ -17,8 +17,11 @@ def detect_gesture(input_frame):
     frame_gray = cv2.cvtColor(input_frame, cv2.COLOR_BGR2GRAY)
     _, frame_bin = cv2.threshold(frame_gray, 32, 255, cv2.THRESH_BINARY)
     # find contours
-    contours, hierarchy = cv2.findContours(
-        frame_bin.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    try:
+        contours, hierarchy = cv2.findContours(
+            frame_bin.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    except:
+        contours = []
     # find the largest contour
 
     if len(contours) != 0:
@@ -61,7 +64,7 @@ def detect_gesture(input_frame):
                     cv2.circle(input_frame,tuple(indicator),5,[255,255,255],-1)
             elif num_points > 3:
                 est_gesture=1
-                
+            #indicator = cnt[np.argmin(cnt, axis=0)[0, 1]][0]    
         except:
             pass#print(-1)
 

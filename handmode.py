@@ -20,9 +20,9 @@ def hand_mode(est_gesture,current_state,count_2,count_1,count_n1):
 	#stop2active=
 	stop2deactive=10
 	active2stop=2
-	#active2deactive=
+	active2deactive=30
 	deactive2start=2
-	#deactive2active=	
+	deactive2active=30	
 
 	nextstate = current_state
 
@@ -39,11 +39,11 @@ def hand_mode(est_gesture,current_state,count_2,count_1,count_n1):
 			count_2=0
 			count_1=0
 			count_n1=0
-		#elif count_2 >= deactive2active :
-		#	nextstate = "Active"
-		#	count_2=0
-		#	count_1=0
-		#	count_n1=0
+		elif count_2 >= deactive2active :
+			nextstate = "Active"
+			count_2=0
+			count_1=0
+			count_n1=0
 		if est_gesture == -1 :
 			count_2=0
 			count_1=0
@@ -84,11 +84,11 @@ def hand_mode(est_gesture,current_state,count_2,count_1,count_n1):
 			count_2=0
 			count_1=0
 			count_n1=0
-		#elif count_n1 >= active2deactive :
-		#	nextstate = "Deactive"
-		#	count_2=0
-		#	count_1=0
-		#	count_n1=0
+		elif count_n1 >= active2deactive :
+			nextstate = "Deactive"
+			count_2=0
+			count_1=0
+			count_n1=0
 		if est_gesture == 2 :
 			count_2=0
 			count_1=0

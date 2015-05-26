@@ -44,10 +44,15 @@ def find_active_hand(frame_input):
         frame_cropped = \
             frame_input[p1[0, 1]:p2[0, 1], p1[0, 0]:p2[0, 0], :]
         crop_point = (p1[0, 0], p1[0, 1])
+    else:
+        pass
+	#print('AAAA')
     frame_output = frame_cropped
+
     
     if np.min(frame_output.shape) < 2:
         crop_point = (-1, -1)
         frame_output = np.array([[255, 255], [255, 255]])
+	#print('BBBB')
 
     return crop_point, frame_output, frame_contours
