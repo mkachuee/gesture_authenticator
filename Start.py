@@ -418,7 +418,7 @@ def main_loop():
 	hand_points_mean = np.mean(hand_points, axis=0)
         crop_points_mean = np.mean(crop_points, axis=0)
         dist = np.sum(((hand_points_mean - hand_pos)**2))
-        print(dist)
+        #print(dist)
         if dist > 100000:
             #print('HHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
             hand_pos =  (int(hand_points_mean[0]), int(hand_points_mean[1])) 
@@ -472,10 +472,13 @@ def main_loop():
 	    if FLAG_LEARN:
                 print('learning a new pattern')
                 faces = face.face_detect(frame_output_11)
-		for (x, y, w, h) in faces:
-			face_box = frame_output_11[y:y+h,x:x+w]
+                try:
+		    for (x, y, w, h) in faces:
+		    	face_box = frame_output_11[y:y+h,x:x+w]
 		#cv2.imshow('output video 1', face_box)
-		KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
+                except:
+                    face_box = np.zeros((2, 2))
+                KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
                 tts_engine.say('a new pattern registered')
                 tts_engine.runAndWait()
             else:
