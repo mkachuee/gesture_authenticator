@@ -76,9 +76,9 @@ def skin_detector2(frame_input, frame_BGS_input, face_rectangles):
 	low_range2 = np.array([160, 60, 70], dtype="uint8")
 	high_range2 = np.array([180, 255, 255], dtype="uint8")
 
-	low_range11 = np.array([0, 30, 70], dtype="uint8")
+	low_range11 = np.array([0, 50, 70], dtype="uint8")
 	high_range11 = np.array([10, 255, 255], dtype="uint8")
-	low_range12 = np.array([170, 30, 70], dtype="uint8")
+	low_range12 = np.array([170, 50, 70], dtype="uint8")
 	high_range12 = np.array([180, 255, 255], dtype="uint8")
 
 	skin_detected_1 = cv2.inRange(frame_BGS_HSV, low_range1, high_range1)

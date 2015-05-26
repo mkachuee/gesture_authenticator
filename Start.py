@@ -34,8 +34,8 @@ PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
 
 
 VIDEO_SOURCE = \
-    '0.avi'
-    #'../../S474martVision/Hand_PatternDrawing.avi'
+    '5.MOV'
+    #'../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 write_file = ''
 #WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
@@ -472,13 +472,15 @@ def main_loop():
 	    if FLAG_LEARN:
                 print('learning a new pattern')
                 faces = face.face_detect(frame_output_11)
-                try:
+                if len(faces) != 0 :
 		    for (x, y, w, h) in faces:
 		    	face_box = frame_output_11[y:y+h,x:x+w]
+			KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
 		#cv2.imshow('output video 1', face_box)
-                except:
+                else :
                     face_box = np.zeros((2, 2))
-                KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
+                    KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
+		    print('no face!')
                 tts_engine.say('a new pattern registered')
                 tts_engine.runAndWait()
             else:

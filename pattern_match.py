@@ -55,10 +55,11 @@ def match_pattern(pattern, list_keys):
         scores.append(pattern_score)
 	print (('1m',pattern_match))
         print (('2m',key_match))
+	print(pattern.shape)
     scores = np.vstack(scores)
     best_match = np.argmax(scores)
     print(('score', scores[best_match]))
-    if scores[best_match] > 50:
+    if scores[best_match] > 70:
         output = list_keys[best_match][0]
         output_ind = best_match
     return output, output_ind
