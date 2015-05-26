@@ -15,14 +15,14 @@ def hand_mode(est_gesture,current_state,count_2,count_1,count_n1):
 	3 - Deactive : when hand is down or clenched
 	4 - Stop : stop of recording
 	"""
-	start2active=8
+	start2active=8/2
 	#start2deactive=
 	#stop2active=
-	stop2deactive=10
-	active2stop=2
-	active2deactive=30
-	deactive2start=2
-	deactive2active=30	
+	stop2deactive=10/2
+	active2stop=2/2
+	active2deactive=30/2
+	deactive2start=2/2
+	deactive2active=30/2	
 
 	nextstate = current_state
 

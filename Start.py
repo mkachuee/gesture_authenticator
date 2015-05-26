@@ -34,7 +34,7 @@ PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
 
 
 VIDEO_SOURCE = \
-    '5.MOV'
+    '0.avi'
     #'../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 write_file = ''
@@ -48,7 +48,7 @@ count_1=0
 count_n1=0
 Last_HandMode="Deactive"
 HandMode="Deactive"
-VIDEO_FR = 30.0
+VIDEO_FR = 15.0
 # Script starts here
 video_capture = cv2.VideoCapture(VIDEO_SOURCE)
 frame_number = 0
@@ -254,12 +254,14 @@ class UserInterface(QWidget):
         self.display_0.setPixmap(pixmap_0)
         
         pixmap_1 = cv22pixmap(frame_2)
-        pixmap_1 = pixmap_1.scaled(self.display_1.height(), self.display_1.width(),
+        pixmap_1 = pixmap_1.scaled(self.display_1.height(), 
+            self.display_1.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_1.setPixmap(pixmap_1)
 
         pixmap_2 = cv22pixmap(frame_3)
-        pixmap_2 = pixmap_2.scaled(self.display_2.height(), self.display_2.width(),
+        pixmap_2 = pixmap_2.scaled(self.display_2.height(), 
+            self.display_2.width(),
             aspectRatioMode=Qt.KeepAspectRatio)
         self.display_2.setPixmap(pixmap_2)
         # display on popup
@@ -374,6 +376,7 @@ def main_loop():
     # get a frame
     try:
         ret, frame_input = video_capture.read()
+        ret, frame_input = video_capture.read()
         if ret == 0:
             frame_input = np.zeros((2, 2, 3), np.uint8)
         frame_input = cv2.resize(frame_input, (1080, 720))
@@ -420,7 +423,7 @@ def main_loop():
         dist = np.sum(((hand_points_mean - hand_pos)**2))
         #print(dist)
         if dist > 100000:
-            #print('HHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
+            print('Warning : hand track')
             hand_pos =  (int(hand_points_mean[0]), int(hand_points_mean[1])) 
             crop_point =  (int(crop_points_mean[0]), int(crop_points_mean[1])) 
         
@@ -435,6 +438,8 @@ def main_loop():
             handgesture.detect_gesture(frame_h)
         # find hand mode
 	Last_HandMode = HandMode
+        #HandMode,count_2,count_1,count_n1 = \
+        #    handmode.hand_mode(est_gesture,HandMode,count_2,count_1,count_n1)
         HandMode,count_2,count_1,count_n1 = \
             handmode.hand_mode(est_gesture,HandMode,count_2,count_1,count_n1)
         main_outputs['state_hand'] = HandMode
@@ -501,7 +506,7 @@ def main_loop():
 	    for i,p1 in enumerate(main_loop.Sketch_points):
 		if i != (len(main_loop.Sketch_points)-1) :
                     if cv2.norm(main_loop.Sketch_points[i], 
-                        main_loop.Sketch_points[i+1]) < 80:
+                        main_loop.Sketch_points[i+1]) < 80*1:
                             cv2.line(frame_input, 
                                 main_loop.Sketch_points[i], 
                                 main_loop.Sketch_points[i+1], 
@@ -511,6 +516,7 @@ def main_loop():
                                 main_loop.Sketch_points[i+1], 
                                     [255], 5)
                     else:
+                        print('Warning : path correction')
                         main_loop.Sketch_points[i+1] = main_loop.Sketch_points[i]
         main_outputs['frame_output'] = frame_input
         main_outputs['frame_pattern'] = cv2.cvtColor(

@@ -57,7 +57,7 @@ def detect_gesture(input_frame):
                 #pdb.set_trace()
                 #print(cnt[defects[0, 0][2]][0][1])
                 if cnt[defects[0, 0][2]][0][1] > 20 and \
-                        np.abs(input_frame.shape[0]-input_frame.shape[1]) > 20:
+                        np.abs(input_frame.shape[0]-input_frame.shape[1]) >5:
                     est_gesture = 2
                     #pdb.set_trace()
                     indicator = cnt[np.argmin(cnt, axis=0)[0, 1]][0]
