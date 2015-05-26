@@ -34,7 +34,7 @@ PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
 
 
 VIDEO_SOURCE = \
-    '0.avi'
+    '5.MOV'
     #'../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 write_file = ''

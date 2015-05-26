@@ -19,10 +19,10 @@ def hand_mode(est_gesture,current_state,count_2,count_1,count_n1):
 	#start2deactive=
 	#stop2active=
 	stop2deactive=10/2
-	active2stop=2/2
-	active2deactive=30/2
-	deactive2start=2/2
-	deactive2active=30/2	
+	active2stop=2/1
+	active2deactive=40/2
+	deactive2start=2/1
+	deactive2active=40/2	
 
 	nextstate = current_state
 
