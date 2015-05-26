@@ -375,11 +375,11 @@ def main_loop():
     try:
         ret, frame_input = video_capture.read()
         if ret == 0:
-            frame_input = np.zeros((3, 2, 2))
+            frame_input = np.zeros((2, 2, 3), np.uint8)
         frame_input = cv2.resize(frame_input, (1080, 720))
         main_outputs = {'frame_input':frame_input.copy()}
     except:
-        frame_input = np.zeros((3, 2, 2))
+        frame_input = np.zeros((2, 2, 3), np.uint8)
         main_outputs = {'frame_input':frame_input.copy()}
 
     main_outputs['key_status'] = -2 # -2 means do nothing
@@ -420,7 +420,7 @@ def main_loop():
         dist = np.sum(((hand_points_mean - hand_pos)**2))
         print(dist)
         if dist > 100000:
-            print('HHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
+            #print('HHHHHHHHHHHHHHHHHHHHHHHHHHHHH')
             hand_pos =  (int(hand_points_mean[0]), int(hand_points_mean[1])) 
             crop_point =  (int(crop_points_mean[0]), int(crop_points_mean[1])) 
         
