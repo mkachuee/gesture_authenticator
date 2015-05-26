@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import cv2
 import cv
 import pyttsx
+import pickle
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (QWidget, QLCDNumber, QSlider, 
@@ -38,6 +39,7 @@ VIDEO_SOURCE = \
     #'../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 write_file = ''
+pattern_file = 'Pattern_File.txt'
 #WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
 
 # initialize of FSM variables
@@ -198,7 +200,7 @@ class UserInterface(QWidget):
         if self.radiobutton_save.isChecked():
             write_file = cv2.VideoWriter(
                 self.lineedit_runname.text()+'.avi', 
-                cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
+                cv.CV_FOURCC('M', 'J', 'P', 'G'), VIDEO_FR, (1080, 720))
     def checkbox_learn_toggled(self, e):
         global FLAG_LEARN, TEXT_NAME
         if self.checkbox_learn.isChecked():
@@ -273,11 +275,11 @@ class UserInterface(QWidget):
         # save the frame if the save option is set
         if self.radiobutton_save.isChecked():
             if self.checkbox_save1.isChecked():
-                write_file.write(frame_input)
+                write_file.write(frame_1)
             elif self.checkbox_save2.isChecked():
-                write_file.write(frame_input)
+                write_file.write(frame_2)
             else:
-                write_file.write(frame_input)
+                write_file.write(frame_3)
         # if key status is other than -2
         try:
             if main_out['key_status'] != -2:
@@ -480,18 +482,33 @@ def main_loop():
                 if len(faces) != 0 :
 		    for (x, y, w, h) in faces:
 		    	face_box = frame_output_11[y:y+h,x:x+w]
-			KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
+			new_key = (TEXT_NAME, PATTERN_BUFFER, face_box)
 		#cv2.imshow('output video 1', face_box)
                 else :
                     face_box = np.zeros((2, 2))
-                    KEYRING.append((TEXT_NAME, PATTERN_BUFFER, face_box))
+                    new_key = (TEXT_NAME, PATTERN_BUFFER, face_box)
 		    print('no face!')
+		try:
+			pattern_w = open(pattern_file, 'a+')
+			pattern_w.seek(0)    		
+			keys_1 = pickle.load(pattern_w)
+			pattern_w.close()
+		except:
+			keys_1 = []
+		keys_1.append(new_key)
+		with open(pattern_file, 'wb') as f:
+    			pickle.dump(keys_1, f)
+		
                 tts_engine.say('a new pattern registered')
                 tts_engine.runAndWait()
             else:
                 print('start matching now')
-		pattern_name, pattern_index = pattern_match.match_pattern(PATTERN_BUFFER, KEYRING)
+		#read_keys = []
+		pattern_open = open(pattern_file, 'rb')
+    		read_keys = pickle.load(pattern_open)
+		pattern_name, pattern_index = pattern_match.match_pattern(PATTERN_BUFFER, read_keys)
                 #print((PATTERN_BUFFER.shape, TEXT_NAME))
+		pattern_open.close()
 		print((pattern_name, pattern_index))
                 main_outputs['key_status'] = pattern_index
 		
