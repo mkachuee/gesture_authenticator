@@ -249,19 +249,19 @@ class UserInterface(QWidget):
         pixmap_0 = cv22pixmap(frame_1)
         pixmap_0 = pixmap_0.scaled(self.display_0.height(), 
             self.display_0.width(),
-            aspectRatioMode=Qt.KeepAspectRatio)
+            aspectRatioMode=Qt.IgnoreAspectRatio)
         self.display_0.setPixmap(pixmap_0)
         
         pixmap_1 = cv22pixmap(frame_2)
         pixmap_1 = pixmap_1.scaled(self.display_1.height(), 
             self.display_1.width(),
-            aspectRatioMode=Qt.KeepAspectRatio)
+            aspectRatioMode=Qt.IgnoreAspectRatio)
         self.display_1.setPixmap(pixmap_1)
 
         pixmap_2 = cv22pixmap(frame_3)
         pixmap_2 = pixmap_2.scaled(self.display_2.height(), 
             self.display_2.width(),
-            aspectRatioMode=Qt.KeepAspectRatio)
+            aspectRatioMode=Qt.IgnoreAspectRatio)
         self.display_2.setPixmap(pixmap_2)
         # display on popup
         if FLAG_FULL_SCREEN:
