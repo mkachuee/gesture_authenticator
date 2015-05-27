@@ -1,4 +1,6 @@
-
+"""
+This module is used to find the active hand's gesture.
+"""
 
 # imports
 import pdb
