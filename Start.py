@@ -672,24 +672,24 @@ def main_loop():
                 main_loop.Sketch_points.append(main_loop.Sketch_points[-1])
             else:
                 main_loop.Sketch_points.append(point_text)
-                for i, p1 in enumerate(main_loop.Sketch_points):
-                    if i != (len(main_loop.Sketch_points) - 1):
-                        # draw a line between the two points
-                        # check if we need path correction
-                        if cv2.norm(main_loop.Sketch_points[i],
-                                    main_loop.Sketch_points[i + 1]) < 80 * 1:
-                            cv2.line(frame_input,
-                                     main_loop.Sketch_points[i],
-                                     main_loop.Sketch_points[i + 1],
-                                     [0, 255, 0], 10)
-                            cv2.line(PATTERN_BUFFER,
-                                     main_loop.Sketch_points[i],
-                                     main_loop.Sketch_points[i + 1],
-                                     [255], 5)
-                        else:
-                            # do path correction
-                            print('Warning : path correction')
-                            main_loop.Sketch_points[i + 1] = main_loop.Sketch_points[i]
+            for i, p1 in enumerate(main_loop.Sketch_points):
+                if i != (len(main_loop.Sketch_points) - 1):
+                    # draw a line between the two points
+                    # check if we need path correction
+                    if cv2.norm(main_loop.Sketch_points[i],
+                                main_loop.Sketch_points[i + 1]) < 80 * 1:
+                        cv2.line(frame_input,
+                                 main_loop.Sketch_points[i],
+                                 main_loop.Sketch_points[i + 1],
+                                 [0, 255, 0], 10)
+                        cv2.line(PATTERN_BUFFER,
+                                 main_loop.Sketch_points[i],
+                                 main_loop.Sketch_points[i + 1],
+                                 [255], 5)
+                    else:
+                        # do path correction
+                        print('Warning : path correction')
+                        main_loop.Sketch_points[i + 1] = main_loop.Sketch_points[i]
         main_outputs['frame_output'] = frame_input
         main_outputs['frame_pattern'] = cv2.cvtColor(
             PATTERN_BUFFER, cv2.COLOR_GRAY2BGR)
