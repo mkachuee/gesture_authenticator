@@ -35,13 +35,11 @@ PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
 
 
 VIDEO_SOURCE = \
-    '5.MOV'
+    '0.avi'
     #'../../SmartVision/Hand_PatternDrawing.avi'
                 #'/home/mehdi/vision/Sample-Video/Hand_PatternDrawing.avi'
 write_file = ''
 pattern_file = 'Pattern_File.txt'
-#WriteFile = cv2.VideoWriter("Phase1and2_Out_Video.avi", cv.CV_FOURCC('M', 'J', 'P', 'G'), 30, (1080, 720))
-
 # initialize of FSM variables
 fgbg = cv2.BackgroundSubtractorMOG2(history=50, varThreshold=332)
 
@@ -188,7 +186,6 @@ class UserInterface(QWidget):
         grid.addWidget(self.lineedit_name, 32, 32, 2, 4)
         # set layout
         self.setLayout(grid)
-        #self.setGeometry(200, 200, 150, 150)
         self.setWindowTitle('Test')
         self.show()
 
@@ -305,6 +302,9 @@ class UserInterface(QWidget):
             pass
 
 def cv22pixmap(frame_input, channels=3):
+    """
+    Convert from opencv to QT format.
+    """
     if len(frame_input.shape) == 3:
         image_input = QImage(frame_input.tostring(), frame_input.shape[1], 
              frame_input.shape[0], frame_input.shape[1]*channels, 
@@ -320,6 +320,9 @@ def cv22pixmap(frame_input, channels=3):
     return pixmap
 
 class PopupWindow(QWidget):
+    """
+    Fullscreen popup window.
+    """
     def __init__(self):
         QWidget.__init__(self)
         self.display_popup = QLabel('display_popup', self)
@@ -337,6 +340,9 @@ class PopupWindow(QWidget):
         self.display_popup.setPixmap(pixmap)
 
 class PopupAccess(QWidget):
+    """
+    Popup for access messages.
+    """
     def __init__(self):
         QWidget.__init__(self)
         #self.resize( 200, 200)
@@ -365,6 +371,10 @@ class PopupAccess(QWidget):
 
 # main loop for doing things
 def main_loop():
+    """
+    Main loop of frame and video processing.
+    Important things happen here ...
+    """
     global frame_time, frame_number, HandMode, count_1, count_2, \
         count_n1, video_capture, KEYRING, PATTERN_BUFFER, TEXT_NAME, fgbg, \
         hand_points, crop_points
@@ -387,6 +397,7 @@ def main_loop():
         frame_input = np.zeros((2, 2, 3), np.uint8)
         main_outputs = {'frame_input':frame_input.copy()}
 
+    ################### phase 1 starts here ###################
     main_outputs['key_status'] = -2 # -2 means do nothing
     # store first 3s frames
     if frame_number < 5:
@@ -405,7 +416,7 @@ def main_loop():
             np.min([frame_output_11.shape[0], frame_output_11.shape[1]])<4:
             return frame_input, frame_output_1, frame_output_2
         
-        # phase 2 starts here
+        ################### phase 2 starts here ###################
         face_rectangles = -1
         frame_skin, frame_justSkin = skindetection.skin_detector2(
             frame_input, frame_output_11, face_rectangles)
@@ -456,26 +467,33 @@ def main_loop():
             frame_output_2 = frame_hand
         frame_output_1 = frame_output_11
 
-        # phase 4 starts here
-	if HandMode == 'Start':
+        ################### phase 3, 4 starts here ###################
+	
+        # if hand mode is start
+        if HandMode == 'Start':
             main_loop.Sketch_points = []
             # start saving points
             PATTERN_BUFFER = np.zeros((frame_input.shape[0], 
                 frame_input.shape[1]), np.uint8)
+        
+        # check if hand is deactivated
 	elif HandMode == 'Deactive':
             main_loop.Sketch_points = []
             # start saving points
             PATTERN_BUFFER = np.zeros((frame_input.shape[0], 
                 frame_input.shape[1]), np.uint8)
 	
+        # correct some problemetic states
         if HandMode == 'Stop' and Last_HandMode == 'Active':
             # crop black areas
-            ind = np.nonzero(PATTERN_BUFFER)#cv2.medianBlur(PATTERN_BUFFER, 4))
+            ind = np.nonzero(PATTERN_BUFFER)
             if len(ind[0] != 0):
                 crop_point = (np.min(ind[0]), np.min(ind[1]))
                 PATTERN_BUFFER = PATTERN_BUFFER[
                     np.min(ind[0]):np.max(ind[0]),
                     np.min(ind[1]):np.max(ind[1])]
+            
+            # if we are in learning mode
 	    if FLAG_LEARN:
                 print('learning a new pattern')
                 faces = face.face_detect(frame_output_11)
@@ -496,6 +514,7 @@ def main_loop():
 		except:
 			keys_1 = []
 		keys_1.append(new_key)
+                KEYRING = keys_1
 		with open(pattern_file, 'wb') as f:
     			pickle.dump(keys_1, f)
 		
@@ -510,12 +529,12 @@ def main_loop():
                 #print((PATTERN_BUFFER.shape, TEXT_NAME))
 		pattern_open.close()
 		print((pattern_name, pattern_index))
+                KEYRING = read_keys
                 main_outputs['key_status'] = pattern_index
 		
                 
-	
+        # if hand mode is in active mode	
         if HandMode == 'Active':
-            #cv2.circle(PATTERN_BUFFER, point_text, 5, [255], -1)
 	    if indicator[0] == -1:
 		main_loop.Sketch_points.append(main_loop.Sketch_points[-1])
 	    else:	    
@@ -544,7 +563,7 @@ main_loop.cnt = 0
 main_loop.Sketch_points = []
 
 if  __name__ == '__main__':
-    
+    # handle main operations
     app = QApplication(sys.argv)
     ex = UserInterface()
     sys.exit(app.exec_())
