@@ -435,7 +435,7 @@ def main_loop():
         crop_points_mean = np.mean(crop_points, axis=0)
         dist = np.sum(((hand_points_mean - hand_pos)**2))
         #print(dist)
-        if dist > 100000:
+        if dist > 500000:
             print('Warning : hand track')
             hand_pos =  (int(hand_points_mean[0]), int(hand_points_mean[1])) 
             crop_point =  (int(crop_points_mean[0]), int(crop_points_mean[1])) 
