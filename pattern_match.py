@@ -25,8 +25,8 @@ def match_pattern(pattern, list_keys):
         pattern_resized = cv2.resize(pattern, (key[1].shape[1], key[1].shape[0]))
 	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (10, 10))
 	key_dilated = cv2.dilate(key[1], kernel, iterations=2)
-	print (('key shape',key[1].shape))
-	print (('pattern shape',pattern_resized.shape))
+	#print (('key shape',key[1].shape))
+	#print (('pattern shape',pattern_resized.shape))
 	pattern_true_pixel = cv2.bitwise_and(pattern_resized, pattern_resized, mask=key_dilated)
 	#cv2.imshow('dilated', key_dilated)
 	#cv2.imshow('and', pattern_true_pixel)
@@ -44,18 +44,18 @@ def match_pattern(pattern, list_keys):
 				total_key_pixels += 1
 			 
         # calc score
-	print (('true',positive_pixels))
-        print (('pattern',total_pattern_pixels))
-        print (('key',total_key_pixels))
+	#print (('true',positive_pixels))
+        #print (('pattern',total_pattern_pixels))
+        #print (('key',total_key_pixels))
         # frame of key pattern is in key[1]
         pattern_match = (float(positive_pixels) / total_pattern_pixels)*100
         key_match = (float(positive_pixels) / total_key_pixels)*100
         pattern_score = min(pattern_match, key_match)
         # add to score list
         scores.append(pattern_score)
-	print (('1m',pattern_match))
-        print (('2m',key_match))
-	print(pattern.shape)
+	print (('TestPercent',pattern_match))
+        print (('PatternPercent',key_match))
+	#print(pattern.shape)
     scores = np.vstack(scores)
     best_match = np.argmax(scores)
     print(('score', scores[best_match]))
