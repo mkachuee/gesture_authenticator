@@ -69,7 +69,7 @@ class UserInterface(QWidget):
         self.ui_init()
 
     def ui_init(self):
-        self.grid_size = 8
+        self.grid_size = 3
         pixmap_0 = QPixmap('0.jpg')
         pixmap_1 = QPixmap('0.jpg')
         pixmap_2 = QPixmap('0.jpg')
