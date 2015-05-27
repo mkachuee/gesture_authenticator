@@ -1,4 +1,11 @@
+"""
+This is the main module of our project.
+    
+Notes:
 
+        Please change the line 40 to an appropriate path
+        For other instruction please refer to the final report paper.
+"""
 # Imports
 import pdb
 import time
@@ -216,9 +223,36 @@ class UserInterface(QWidget):
         self.timer_0.stop()
 
     def button_restart_clicked(self):
-        global video_capture, frame_number
+        global FLAG_LEARN, FLAG_FULL_SCREEN, TEXT_NAME, KEYRING, \
+            PATTERN_BUFFER, write_file, pattern_file, fgbg, count_n1, \
+            count_1, count_2, Last_HandMode, HandMode, VIDEO_FR, \
+            VIDEO_SOURCE, VideoCapture, frame_number, frame_time, \
+            frames_first3s, hand_points, crop_points, video_capture
+
+        FLAG_FULL_SCREEN = False
+        FLAG_LEARN = True
+        TEXT_NAME = ''
+        KEYRING = []
+        PATTERN_BUFFER = np.zeros((16, 16), np.uint8)
+
+        write_file = ''
+        pattern_file = 'Pattern_File.txt'
+        # initialize of FSM variables
+        fgbg = cv2.BackgroundSubtractorMOG2(history=50, varThreshold=332)
+
+        count_2=0
+        count_1=0
+        count_n1=0
+        Last_HandMode="Deactive"
+        HandMode="Deactive"
+        VIDEO_FR = 15.0
+        # Script starts here
         video_capture = cv2.VideoCapture(VIDEO_SOURCE)
         frame_number = 0
+        frame_time = 0
+        frames_first3s = []
+        hand_points = []
+        crop_points = []
 
     def display_clicked(self, e):
         global FLAG_FULL_SCREEN
